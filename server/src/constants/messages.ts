@@ -204,10 +204,43 @@ export const PAYMENT_MESSAGE = {
   PAYMENT_FAILED: 'Payment failed',
   INTERNAL_SERVER_ERROR: 'Internal server error',
   CONFIRM_SUCCESS: 'Confirm success',
-  UNKNOW_ERROR: 'Unknow error',
+  UNKNOW_ERROR: 'Unknown error',
   PAYMENT_NOT_FOUND: 'Payment not found',
-  CANNOT_CREATE_FREE_PAYMENT: 'Cannot create payment for free subscription'
-}
+  CANNOT_CREATE_FREE_PAYMENT: 'Cannot create payment for free subscription',
+
+  // New messages for enhanced payment system
+  CREATE_PAYMENT_SUCCESS: 'Payment created successfully',
+  GET_PAYMENTS_SUCCESS: 'Get payments successfully',
+  GET_PAYMENT_SUCCESS: 'Get payment successfully',
+  UPDATE_PAYMENT_STATUS_SUCCESS: 'Payment status updated successfully',
+  DELETE_PAYMENT_SUCCESS: 'Payment deleted successfully',
+  PAYMENT_ALREADY_PROCESSED: 'Payment already processed',
+  PAYMENT_EXPIRED: 'Payment has expired',
+  INVALID_PAYMENT_STATUS: 'Invalid payment status',
+  PAYMENT_PENDING: 'Payment is pending approval',
+  PAYMENT_COMPLETED: 'Payment completed successfully',
+  PAYMENT_REJECTED: 'Payment has been rejected',
+
+  // Package messages
+  GET_PACKAGES_SUCCESS: 'Get packages successfully',
+  CREATE_PACKAGE_SUCCESS: 'Package created successfully',
+  UPDATE_PACKAGE_SUCCESS: 'Package updated successfully',
+  DELETE_PACKAGE_SUCCESS: 'Package deleted successfully',
+  PACKAGE_NOT_FOUND: 'Package not found',
+  PACKAGE_INACTIVE: 'Package is inactive',
+  INVALID_PACKAGE_TYPE: 'Invalid package type',
+  PACKAGE_HAS_PENDING_PAYMENTS: 'Cannot delete package with pending payments',
+
+  // Teacher validation messages
+  TEACHER_USERNAME_NOT_FOUND: 'Some teacher usernames not found',
+  INVALID_TEACHER_USERNAME: 'Invalid teacher username',
+  TEACHER_LIMIT_EXCEEDED: 'Number of teachers exceeds package limit',
+  DUPLICATE_TEACHER_USERNAME: 'Duplicate teacher usernames not allowed',
+
+  // Statistics messages
+  GET_PAYMENT_STATISTICS_SUCCESS: 'Get payment statistics successfully',
+  GENERATE_PAYMENT_REPORT_SUCCESS: 'Generate payment report successfully'
+} as const
 export const ADMIN_MESSAGES = {
   ADMIN_PERMISSION_REQUIRED: 'Admin permission required',
   GET_USER_STATS_SUCCESS: 'Get user statistics successfully',

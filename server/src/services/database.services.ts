@@ -10,6 +10,7 @@ import ExamSession from '../models/schemas/ExamSession.schema'
 import MasterExam from '../models/schemas/MasterExam.schema'
 import Feedback from '~/models/schemas/Feedback.schema'
 import Payment from '~/models/schemas/Payment.schema'
+import PackagePrice from '~/models/schemas/PackagePriceType.schema'
 
 const uri =
   'mongodb+srv://minhvqhe176726:minhvqhe176726@management-employee.31yis.mongodb.net/?retryWrites=true&w=majority&appName=management-employee'
@@ -116,6 +117,9 @@ class DatabaseService {
   }
   get payments(): Collection<Payment> {
     return this.db.collection('payments')
+  }
+  get packages(): Collection<PackagePrice> {
+    return this.db.collection('packages')
   }
   async indexEmbeddings() {
     try {

@@ -5,6 +5,7 @@ import faceVerificationRouter from './faceVerification.routes'
 import searchRouter from './search.routes'
 import teacherRouter from './teacher.routes'
 import feedbackRouter from './feedback.routes'
+import paymentRouter from './payment.routes'
 
 const apiRouter = Router()
 
@@ -13,5 +14,6 @@ apiRouter.use('/exams', examsRouter)
 apiRouter.use('/face', faceVerificationRouter)
 apiRouter.use('/search', searchRouter)
 apiRouter.use('/teacher', teacherRouter)
+apiRouter.use('/payments', paymentRouter)
 apiRouter.use('/feedbacks', feedbackRouter)
 export default apiRouter
