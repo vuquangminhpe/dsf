@@ -432,11 +432,17 @@ class UserService {
     )
     return changePassword
   }
-  async chatWithGemini(count: number) {
+  async chatWithGemini(body: {
+    count: number
+    mon_hoc: string
+    sachgiaokhoa: string
+    lop: string
+    cauhoidanhchohocsinh: string
+  }) {
     const apiKey = process.env.GERMINI_API_KEY
     const genAI = new GoogleGenerativeAI(apiKey as string)
     const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' })
-    const result = await model.generateContent(PROMPT_CHAT(count))
+    const result = await model.generateContent(PROMPT_CHAT(body))
 
     const response = await result.response
     const aiResponseText = response.text()

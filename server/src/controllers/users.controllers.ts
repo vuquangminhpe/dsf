@@ -295,9 +295,9 @@ export const changePasswordController = async (
 }
 
 export const generateTextGeminiController = async (req: Request<ParamsDictionary, any, any>, res: Response) => {
-  const { count } = req.body
+  const { count, mon_hoc, sachgiaokhoa, lop, cauhoidanhchohocsinh } = req.body
 
-  const result = await usersService.chatWithGemini(count)
+  const result = await usersService.chatWithGemini(req.body)
 
   res.json({
     data: result

@@ -67,10 +67,16 @@ Nếu vi phạm BẤT KỲ tiêu chí nào trên, DỪNG XỬ LÝ NGAY và trả
     4. Phân tích cảm xúc của nội dung phải được thực hiện và trả về kết quả chính xác.
 `
 
-export const PROMPT_CHAT = (count: number) => `
-Hãy vào vai một giáo viên dạy môn Hóa học cấp trung học phổ thông ở Việt Nam và suy nghĩ sau đó tạo ${count} câu hỏi trắc nghiệm môn hóa học (lưu ý đặc biệt đó là sách giáo khóa sách kết nối tri thức nhé - không được lấy kiến thức khác ngoài sách giáo khoa này nhé), chương trình Trung học phổ thông Việt Nam. Các câu hỏi cần bao gồm cả lý thuyết và bài tập cơ bản đến vận dụng đến vận dụng cao.
+export const PROMPT_CHAT = (body: {
+  count: number
+  mon_hoc: string
+  sachgiaokhoa: string
+  lop: string
+  cauhoidanhchohocsinh: string
+}) => `
+Hãy vào vai một giáo viên dạy môn ${body.mon_hoc} lớp ${body.lop} ở Việt Nam và suy nghĩ sau đó tạo ${body.count} câu hỏi trắc nghiệm môn ${body.mon_hoc} (lưu ý đặc biệt đó là sách giáo khóa ${body.sachgiaokhoa || ''} nhé - không được lấy kiến thức khác ngoài sách giáo khoa này nhé), chương trình của lớp ${body.lop} ở Việt Nam. Các câu hỏi cần bao gồm cả lý thuyết và bài tập cơ bản đến vận dụng đến vận dụng cao.
 
-Yêu cầu trả về kết quả DƯỚI DẠNG MỘT ĐỐI TƯỢNG JSON DUY NHẤT, không kèm theo bất kỳ văn bản giải thích nào khác.
+Yêu cầu trả về kết quả DƯỚI DẠNG MỘT ĐỐI TƯỢNG JSON DUY NHẤT, không kèm theo bất kỳ văn bản giải thích nào khác và không thừa bất cứ thứ nào khác.
 
 Cấu trúc JSON phải như sau:
 {
@@ -83,14 +89,14 @@ Cấu trúc JSON phải như sau:
       "id": 2,
       "question_text": "Câu 2: {Nội dung câu hỏi 2}\nA. {Nội dung đáp án A2}\nB. {Nội dung đáp án B2}\nC. {Nội dung đáp án C2}\nD. {Nội dung đáp án D2}"
     },
-    // ... tiếp tục cho đến hết ${count} câu hỏi
+    // ... tiếp tục cho đến hết ${body.count} câu hỏi
     
   ],
   "answers": [
     // Danh sách các đáp án đúng theo thứ tự câu hỏi, chỉ gồm ký tự 'A', 'B', 'C', hoặc 'D'
     "{Đáp án câu 1}", // Ví dụ: "A"
     "{Đáp án câu 2}", // Ví dụ: "C"
-    // ... tiếp tục cho đến hết ${count} đáp án
+    // ... tiếp tục cho đến hết ${body.count} đáp án
     "{Đáp án câu cuối}" // Ví dụ: "B"
   ]
 }
