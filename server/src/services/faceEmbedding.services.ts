@@ -46,9 +46,9 @@ interface FaceEmbedding {
 
 class CompleteFaceAnalysisService {
   // 🔥 THREE SPECIALIZED MODELS - Each with specific purpose
-  private readonly SCRFD_MODEL_PATH = path.join(process.cwd(), 'server','models', 'scrfd_10g_bnkps.onnx') // Face Detection + Landmarks
-  private readonly GENDERAGE_MODEL_PATH = path.join(process.cwd(),'server', 'models', 'genderage.onnx') // Gender + Age
-  private readonly GLINTR100_MODEL_PATH = path.join(process.cwd(), 'server','models', 'glintr100.onnx') // Face Recognition
+  private readonly SCRFD_MODEL_PATH = path.join(process.cwd(), 'models', 'scrfd_10g_bnkps.onnx') // Face Detection + Landmarks
+  private readonly GENDERAGE_MODEL_PATH = path.join(process.cwd(), 'models', 'genderage.onnx') // Gender + Age
+  private readonly W600K_MBF_MODEL_PATH = path.join(process.cwd(), 'models', 'w600k_mbf.onnx') // Face Recognition
 
   // Model sessions
   private scrfdSession: ort.InferenceSession | null = null // Face detection
@@ -98,8 +98,8 @@ class CompleteFaceAnalysisService {
       // 2. GenderAge Model
       await this.loadGenderAgeModel()
 
-      // 3. GLinT100 Recognition Model
-      await this.loadGLinT100Model()
+      // 3. W600K MBF Recognition Model
+      await this.loadW600kMbfModel()
 
       this.isInitialized = true
       console.log('🎉 Complete InsightFace Pipeline loaded successfully!')
@@ -109,24 +109,24 @@ class CompleteFaceAnalysisService {
     }
   }
 
-  private async loadGLinT100Model() {
-    console.log(`🔍 Loading GLinT100 model from: ${this.GLINTR100_MODEL_PATH}`)
+  private async loadW600kMbfModel() {
+    console.log(`🔍 Loading W600K MBF model from: ${this.W600K_MBF_MODEL_PATH}`)
 
-    if (!fs.existsSync(this.GLINTR100_MODEL_PATH)) {
-      throw new Error(`GLinT100 model not found at: ${this.GLINTR100_MODEL_PATH}`)
+    if (!fs.existsSync(this.W600K_MBF_MODEL_PATH)) {
+      throw new Error(`W600K MBF model not found at: ${this.W600K_MBF_MODEL_PATH}`)
     }
 
-    const stats = fs.statSync(this.GLINTR100_MODEL_PATH)
+    const stats = fs.statSync(this.W600K_MBF_MODEL_PATH)
     console.log(`📊 Model file size: ${this.formatBytes(stats.size)}`)
 
     try {
-      this.embeddingSession = await ort.InferenceSession.create(this.GLINTR100_MODEL_PATH)
-      console.log('✅ GLinT100 Face Recognition model loaded successfully')
-      console.log(`📊 GLinT100 Input: ${JSON.stringify(this.embeddingSession.inputNames)}`)
-      console.log(`📊 GLinT100 Output: ${JSON.stringify(this.embeddingSession.outputNames)}`)
+      this.embeddingSession = await ort.InferenceSession.create(this.W600K_MBF_MODEL_PATH)
+      console.log('✅ W600K MBF Face Recognition model loaded successfully')
+      console.log(`📊 W600K MBF Input: ${JSON.stringify(this.embeddingSession.inputNames)}`)
+      console.log(`📊 W600K MBF Output: ${JSON.stringify(this.embeddingSession.outputNames)}`)
     } catch (loadError) {
-      console.error('❌ Failed to load GLinT100 model:', loadError)
-      throw new Error('GLinT100 model cannot be loaded by ONNX Runtime')
+      console.error('❌ Failed to load W600K MBF model:', loadError)
+      throw new Error('W600K MBF model cannot be loaded by ONNX Runtime')
     }
   }
 
@@ -856,7 +856,7 @@ class CompleteFaceAnalysisService {
           width: cropWidth,
           height: cropHeight
         })
-        .resize(112, 112, { fit: 'cover' }) // Standard size for both GenderAge and GLinT100
+        .resize(112, 112, { fit: 'cover' }) // Standard size for both GenderAge and W600K MBF
         .toBuffer()
 
       console.log(`✅ Face aligned to 112x112`)
@@ -1236,14 +1236,14 @@ class CompleteFaceAnalysisService {
     return { age: finalAge, confidence: 0.6 }
   }
 
-  // 🔥 STEP 2c: Face Recognition Embedding with GLinT100
+  // 🔥 STEP 2c: Face Recognition Embedding with W600K MBF
   private async extractFaceEmbedding(alignedFace: Buffer): Promise<number[]> {
     if (!this.embeddingSession) {
-      throw new Error('GLinT100 model not loaded')
+      throw new Error('W600K MBF model not loaded')
     }
 
     try {
-      // Preprocess for GLinT100 (112x112)
+      // Preprocess for W600K MBF (112x112)
       const { data } = await sharp(alignedFace)
         .resize(112, 112)
         .toColorspace('srgb')
@@ -1263,7 +1263,7 @@ class CompleteFaceAnalysisService {
         }
       }
 
-      // Run GLinT100 inference
+      // Run W600K MBF inference
       const inputName = this.embeddingSession.inputNames[0]
       const inputTensor = new ort.Tensor('float32', inputData, [1, 3, 112, 112])
       const feeds: { [name: string]: ort.Tensor } = {}
@@ -1274,10 +1274,10 @@ class CompleteFaceAnalysisService {
       const outputTensor = results[outputName]
       const embedding = Array.from(outputTensor.data as Float32Array)
 
-      console.log(`✅ GLinT100 extracted ${embedding.length}D embedding`)
+      console.log(`✅ W600K MBF extracted ${embedding.length}D embedding`)
       return this.l2Normalize(embedding)
     } catch (error) {
-      console.error('GLinT100 embedding extraction failed:', error)
+      console.error('W600K MBF embedding extraction failed:', error)
       throw error
     }
   }
@@ -1999,7 +1999,7 @@ Hãy phân tích và trả lời:`
     models: {
       scrfd: boolean
       genderage: boolean
-      glintr100: boolean
+      arcface_r34: boolean
     }
     pipeline_ready: boolean
     ai_ready: boolean
@@ -2009,10 +2009,10 @@ Hãy phân tích và trả lời:`
     const models = {
       scrfd: this.scrfdSession !== null,
       genderage: this.genderAgeSession !== null,
-      glintr100: this.embeddingSession !== null
+      arcface_r34: this.embeddingSession !== null
     }
 
-    const pipeline_ready = models.glintr100 // GLinT100 is essential
+    const pipeline_ready = models.arcface_r34 // ArcFace R34 is essential
     const ai_ready = !!this.geminiModel && !!process.env.GERMINI_API_KEY
 
     return {

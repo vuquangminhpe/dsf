@@ -104,9 +104,9 @@ const ENHANCED_SEMANTIC_CLUSTERS = {
 }
 
 class EnhancedEmbeddingService {
-  // 🔥 UPDATED: Using Latest 2025 GLinT100 ArcFace Model
-  private readonly GLINTR100_MODEL_PATH = path.join(process.cwd(),'server', 'models', 'glintr100.onnx') // 261MB - LATEST ArcFace
-  private readonly OLD_ARCFACE_PATH = path.join(process.cwd(), 'src','models', 'arcfaceresnet100-8.onnx') // Backward compatibility
+  // 🔥 UPDATED: Using ArcFace R34 Model instead of GLinT100
+  private readonly ARCFACE_R34_MODEL_PATH = path.join(process.cwd(), 'server', 'models', 'arcface_r34.onnx') // ArcFace R34
+  private readonly OLD_ARCFACE_PATH = path.join(process.cwd(), 'src', 'models', 'arcfaceresnet100-8.onnx') // Backward compatibility
 
   private session: ort.InferenceSession | null = null
   private isInitialized = false
@@ -114,7 +114,7 @@ class EnhancedEmbeddingService {
   private readonly TEXT_SIMILARITY_THRESHOLD = 0.3
   private readonly QUALITY_THRESHOLD = 0.4
   private initPromise: Promise<void> | null = null
-  private modelType: 'glintr100' | 'arcface_old' | 'fallback' = 'fallback'
+  private modelType: 'arcface_r34' | 'arcface_old' | 'fallback' = 'fallback'
 
   constructor() {
     this.initPromise = this.initializeModel()
@@ -129,24 +129,24 @@ class EnhancedEmbeddingService {
 
   private async initializeModel() {
     try {
-      console.log('🚀 Enhanced Embedding Service: Loading LATEST InsightFace Models...')
+      console.log('🚀 Enhanced Embedding Service: Loading ArcFace Models...')
 
-      // 🔥 PRIORITY 1: Try to load GLinT100 (Latest 2025 model)
-      if (fs.existsSync(this.GLINTR100_MODEL_PATH)) {
-        console.log('🔄 Loading GLinT100 ArcFace model (LATEST 2025) for Enhanced Service...')
-        this.session = await ort.InferenceSession.create(this.GLINTR100_MODEL_PATH)
-        this.modelType = 'glintr100'
+      // 🔥 PRIORITY 1: Try to load ArcFace R34 (Primary model)
+      if (fs.existsSync(this.ARCFACE_R34_MODEL_PATH)) {
+        console.log('🔄 Loading ArcFace R34 model for Enhanced Service...')
+        this.session = await ort.InferenceSession.create(this.ARCFACE_R34_MODEL_PATH)
+        this.modelType = 'arcface_r34'
         this.isInitialized = true
-        console.log('✅ GLinT100 ArcFace loaded (261MB) - Enhanced Service using LATEST model')
-        console.log(`📊 GLinT100 Input: ${JSON.stringify(this.session.inputNames)}`)
-        console.log(`📊 GLinT100 Output: ${JSON.stringify(this.session.outputNames)}`)
-        console.log('🔥 Enhanced search capability: Latest GLinT100 + Enhanced Text embeddings')
+        console.log('✅ ArcFace R34 loaded - Enhanced Service using primary model')
+        console.log(`📊 ArcFace R34 Input: ${JSON.stringify(this.session.inputNames)}`)
+        console.log(`📊 ArcFace R34 Output: ${JSON.stringify(this.session.outputNames)}`)
+        console.log('🔥 Enhanced search capability: ArcFace R34 + Enhanced Text embeddings')
         return
       }
 
       // 🔥 FALLBACK 1: Try old ArcFace model for backward compatibility
       if (fs.existsSync(this.OLD_ARCFACE_PATH)) {
-        console.log('⚠️ GLinT100 not found, using old ArcFace model (backward compatibility)...')
+        console.log('⚠️ ArcFace R34 not found, using old ArcFace model (backward compatibility)...')
         this.session = await ort.InferenceSession.create(this.OLD_ARCFACE_PATH)
         this.modelType = 'arcface_old'
         this.isInitialized = true
@@ -159,9 +159,7 @@ class EnhancedEmbeddingService {
       // 🔥 FALLBACK 2: No models found - use advanced fallback
       console.log('❌ No ArcFace models found!')
       console.log('📥 For BEST performance, download:')
-      console.log(
-        '   - GLinT100: https://huggingface.co/camenduru/show/resolve/main/insightface/models/antelopev2/glintr100.onnx'
-      )
+      console.log('   - ArcFace R34: Please place arcface_r34.onnx in server/models/ directory')
       console.log('   - Or keep old: arcfaceresnet100-8.onnx')
       console.log('🔄 Enhanced Service will use advanced fallback methods')
 
@@ -187,8 +185,8 @@ class EnhancedEmbeddingService {
 
     reasons.push(`${confidence} confidence`)
 
-    if (this.modelType === 'glintr100') {
-      reasons.push('Latest GLinT100 model')
+    if (this.modelType === 'arcface_r34') {
+      reasons.push('ArcFace R34 model')
     } else if (this.modelType === 'arcface_old') {
       reasons.push('Legacy ArcFace model')
     }
@@ -207,7 +205,7 @@ class EnhancedEmbeddingService {
     try {
       const inputData = await this.preprocessForONNX(imageBuffer)
 
-      // 🔥 UPDATED: Handle both GLinT100 and old ArcFace models
+      // 🔥 UPDATED: Handle both ArcFace R34 and old ArcFace models
       const inputName = this.session.inputNames[0] // Usually 'data' or 'input'
       const inputTensor = new ort.Tensor('float32', inputData, [1, 3, 112, 112])
       const feeds: { [name: string]: ort.Tensor } = {}
@@ -218,7 +216,7 @@ class EnhancedEmbeddingService {
       const outputTensor = results[outputName]
       const embedding = Array.from(outputTensor.data as Float32Array)
 
-      const modelInfo = this.modelType === 'glintr100' ? 'GLinT100 (LATEST 2025)' : 'ArcFace ResNet100-8 (Legacy)'
+      const modelInfo = this.modelType === 'arcface_r34' ? 'ArcFace R34' : 'ArcFace ResNet100-8 (Legacy)'
       console.log(`✅ Enhanced service extracted ${modelInfo} embedding (${embedding.length}D)`)
 
       // L2 normalization for better similarity calculation - same as FaceEmbeddingService
@@ -283,7 +281,7 @@ class EnhancedEmbeddingService {
           width: finalWidth,
           height: finalHeight
         })
-        .resize(112, 112, { fit: 'cover' }) // Standard size for both GLinT100 and ArcFace
+        .resize(112, 112, { fit: 'cover' }) // Standard size for both ArcFace R34 and old ArcFace
         .toBuffer()
 
       // Calculate quality metrics - same method as FaceEmbeddingService
@@ -344,7 +342,7 @@ class EnhancedEmbeddingService {
         throw new Error(`Invalid data length: ${data.length}`)
       }
 
-      // 🔥 UPDATED: Convert to CHW format with proper normalization for BOTH GLinT100 and ArcFace
+      // 🔥 UPDATED: Convert to CHW format with proper normalization for BOTH ArcFace R34 and old ArcFace
       const float32Data = new Float32Array(3 * 112 * 112)
 
       for (let h = 0; h < 112; h++) {
@@ -353,7 +351,7 @@ class EnhancedEmbeddingService {
             const srcIdx = (h * 112 + w) * 3 + c
             const dstIdx = c * 112 * 112 + h * 112 + w
 
-            // Normalize to [-1, 1] range - COMPATIBLE with both GLinT100 and old ArcFace
+            // Normalize to [-1, 1] range - COMPATIBLE with both ArcFace R34 and old ArcFace
             float32Data[dstIdx] = (data[srcIdx] / 255.0 - 0.5) / 0.5
           }
         }
@@ -507,7 +505,7 @@ class EnhancedEmbeddingService {
   }
 
   /**
-   * Enhanced image search - SAME logic as FaceEmbeddingService.verifyFace but with LATEST models
+   * Enhanced image search - SAME logic as FaceEmbeddingService.verifyFace but with ArcFace models
    */
   async searchUsersByImageEnhanced(
     imageBuffer: Buffer,
@@ -524,8 +522,8 @@ class EnhancedEmbeddingService {
       const { age_range, gender, emotion_filter, quality_threshold = this.QUALITY_THRESHOLD, limit = 10 } = options
 
       const modelInfo =
-        this.modelType === 'glintr100'
-          ? 'GLinT100 (LATEST 2025)'
+        this.modelType === 'arcface_r34'
+          ? 'ArcFace R34'
           : this.modelType === 'arcface_old'
             ? 'ArcFace (Legacy)'
             : 'Advanced Fallback'
@@ -533,7 +531,7 @@ class EnhancedEmbeddingService {
       console.log(`🔍 Enhanced image search using ${modelInfo}`)
       console.log(`🎯 Role: ${userRole}, Filters: age=${age_range}, gender=${gender}, emotion=${emotion_filter}`)
 
-      // Step 1: Extract search embedding - Using latest available model
+      // Step 1: Extract search embedding - Using available ArcFace model
       console.log(`📤 Extracting search embedding using ${modelInfo}...`)
       const { alignedFace: searchAlignedFace, quality: searchQuality } = await this.detectAndAlignFace(imageBuffer)
       const searchEmbedding = await this.extractFaceEmbeddingLikeFaceService(searchAlignedFace)
@@ -556,7 +554,7 @@ class EnhancedEmbeddingService {
       const faceEmbeddings = await databaseService.db.collection('face_embeddings').find({}).toArray()
       console.log(`📊 Found ${faceEmbeddings.length} face embeddings in database`)
 
-      // Step 3: Calculate similarities using EXACT FaceEmbeddingService method but with latest model
+      // Step 3: Calculate similarities using EXACT FaceEmbeddingService method but with ArcFace model
       console.log(`🔄 Calculating similarities using ${modelInfo} with FaceEmbeddingService.verifyFace logic...`)
       const similarities = []
 
@@ -1208,7 +1206,7 @@ class EnhancedEmbeddingService {
     await this.ensureInitialized()
 
     const modelInfo = {
-      glintr100: 'GLinT100 ArcFace (Latest 2025 InsightFace)',
+      arcface_r34: 'ArcFace R34 (Primary Model)',
       arcface_old: 'ArcFace ResNet100-8 (Legacy)',
       fallback: 'Advanced Computer Vision Fallback'
     }
@@ -1220,8 +1218,8 @@ class EnhancedEmbeddingService {
           initialized: this.isInitialized,
           model_type: this.modelType,
           model_path:
-            this.modelType === 'glintr100'
-              ? this.GLINTR100_MODEL_PATH
+            this.modelType === 'arcface_r34'
+              ? this.ARCFACE_R34_MODEL_PATH
               : this.modelType === 'arcface_old'
                 ? this.OLD_ARCFACE_PATH
                 : 'N/A',
@@ -1246,7 +1244,7 @@ class EnhancedEmbeddingService {
           'Quality-weighted similarity scoring',
           'Cross-modal verification capability',
           'Backward compatibility with legacy models',
-          'Latest 2025 InsightFace AntelopeV2 support'
+          'ArcFace R34 model support for improved accuracy'
         ]
       }
     }
@@ -1278,7 +1276,7 @@ class EnhancedEmbeddingService {
     }
 
     const modelInfo = {
-      glintr100: 'GLinT100 ArcFace (Latest 2025 - RECOMMENDED)',
+      arcface_r34: 'ArcFace R34 (Primary Model - RECOMMENDED)',
       arcface_old: 'ArcFace ResNet100-8 (Legacy - Still Compatible)',
       fallback: 'Advanced Computer Vision Fallback (Functional but Limited)'
     }
@@ -1294,7 +1292,7 @@ class EnhancedEmbeddingService {
     // Add download recommendation if no model is loaded
     if (this.modelType === 'fallback') {
       result.model_comparison.recommended_download =
-        'https://huggingface.co/camenduru/show/resolve/main/insightface/models/antelopev2/glintr100.onnx'
+        'Please place arcface_r34.onnx in server/models/ directory for optimal performance'
     }
 
     return result
