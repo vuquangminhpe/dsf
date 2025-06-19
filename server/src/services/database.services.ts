@@ -9,8 +9,10 @@ import Exam from '../models/schemas/Exam.schema'
 import ExamSession from '../models/schemas/ExamSession.schema'
 import MasterExam from '../models/schemas/MasterExam.schema'
 import Feedback from '~/models/schemas/Feedback.schema'
+import Payment from '~/models/schemas/Payment.schema'
 
-const uri = 'mongodb+srv://minhvqhe176726:minhvqhe176726@management-employee.31yis.mongodb.net/?retryWrites=true&w=majority&appName=management-employee'
+const uri =
+  'mongodb+srv://minhvqhe176726:minhvqhe176726@management-employee.31yis.mongodb.net/?retryWrites=true&w=majority&appName=management-employee'
 const dbName = 'app_code_student'
 
 class DatabaseService {
@@ -57,7 +59,6 @@ class DatabaseService {
       this.examSessions.createIndex({ exam_id: 1 })
     }
   }
- 
 
   get users(): Collection<User> {
     return this.db.collection(envConfig.usersCollection)
@@ -113,6 +114,9 @@ class DatabaseService {
   get feedbacks(): Collection<Feedback> {
     return this.db.collection('feedbacks')
   }
+  get payments(): Collection<Payment> {
+    return this.db.collection('payments')
+  }
   async indexEmbeddings() {
     try {
       // Index for text embeddings
@@ -136,12 +140,6 @@ class DatabaseService {
         await this.faceEmbeddings.createIndex({ user_id: 1 }, { unique: true })
         await this.faceEmbeddings.createIndex({ created_at: 1 })
       }
-
-     
-     
-
-     
-  
 
       console.log('Embedding and logging indexes created successfully')
     } catch (error) {
