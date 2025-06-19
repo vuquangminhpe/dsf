@@ -88,7 +88,8 @@ class UserService {
       new User({
         ...payload,
         _id: user_id,
-        role: UserRole.Student,
+        count_test: 1,
+        role: UserRole.Teacher,
         email_verify_token: email_verify_token,
         password: hashPassword(payload.password)
       })

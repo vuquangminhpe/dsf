@@ -10,14 +10,14 @@ import {
   uploadSearchImageMiddleware
 } from '../controllers/search.controllers'
 import { AccessTokenValidator, verifiedUserValidator } from '../middlewares/users.middlewares'
-import { teacherRoleValidator } from '../middlewares/role.middlewares'
+import { teacherRoleValidator, typeCountValidator_Teacher } from '../middlewares/role.middlewares'
 import { isAdminValidator } from '../middlewares/admin.middlewares'
 import { wrapAsync } from '../utils/handler'
 
 const searchRouter = Router()
 
 // All routes require authentication and verification
-searchRouter.use(AccessTokenValidator, verifiedUserValidator)
+searchRouter.use(AccessTokenValidator, verifiedUserValidator, typeCountValidator_Teacher)
 
 /**
  * ===== STUDENT SEARCH (For Teachers) =====

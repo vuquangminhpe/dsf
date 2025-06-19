@@ -7,7 +7,7 @@ import {
   DeleteAllQuestionWithTeacher
 } from '../controllers/questions.controllers'
 import { AccessTokenValidator, verifiedUserValidator } from '../middlewares/users.middlewares'
-import { teacherRoleValidator } from '../middlewares/role.middlewares'
+import { teacherRoleValidator, typeCountValidator_Teacher } from '../middlewares/role.middlewares'
 import { wrapAsync } from '../utils/handler'
 import { createQuestionValidator } from '../middlewares/question.validator'
 
@@ -17,7 +17,7 @@ const questionsRouter = Router()
 questionsRouter.use(AccessTokenValidator, verifiedUserValidator)
 
 // All routes require teacher role
-questionsRouter.use(teacherRoleValidator)
+questionsRouter.use(teacherRoleValidator, typeCountValidator_Teacher)
 
 // Routes
 questionsRouter.post('/', createQuestionValidator, wrapAsync(createQuestionController))

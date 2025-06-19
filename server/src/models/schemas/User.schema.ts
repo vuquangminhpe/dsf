@@ -30,20 +30,19 @@ export default class UserType {
   email_verify_token?: string
   forgot_password_token?: string
   verify?: UserVerifyStatus
+  count_test?: number
   role: UserRole
   name: string
   username?: string
   email?: string
   avatar?: string
   class: string
-
-  // New fields
   payment_status?: PaymentStatus
   teacher_level?: TeacherLevel
   age?: number
   gender?: 'nam' | 'nữ'
   phone?: string
-  created_by_teacher?: ObjectId // ID của giáo viên tạo tài khoản học sinh
+  created_by_teacher?: ObjectId
 
   constructor(user: UserType) {
     const date = new Date()
@@ -54,14 +53,13 @@ export default class UserType {
     this.email_verify_token = user.email_verify_token || ''
     this.forgot_password_token = user.forgot_password_token || ''
     this.verify = user.verify || UserVerifyStatus.Unverified
-    this.role = user.role || UserRole.Teacher // Mặc định là teacher
+    this.role = user.role || UserRole.Teacher
     this.username = user.username || ''
     this.email = user.email || ''
+    this.count_test = user.count_test || 0
     this.avatar = user.avatar || ''
     this.name = user.name || ''
     this.class = user.class || ''
-
-    // New fields
     this.payment_status = user.payment_status || PaymentStatus.NotPayment
     this.teacher_level = user.teacher_level
     this.age = user.age

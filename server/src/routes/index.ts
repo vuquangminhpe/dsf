@@ -8,7 +8,6 @@ import feedbackRouter from './feedback.routes'
 import paymentRouter from './payment.routes'
 
 const apiRouter = Router()
-
 apiRouter.use('/questions', questionsRouter)
 apiRouter.use('/exams', examsRouter)
 apiRouter.use('/face', faceVerificationRouter)
