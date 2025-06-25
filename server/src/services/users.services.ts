@@ -84,16 +84,17 @@ class UserService {
       user_id: user_id.toString(),
       verify: UserVerifyStatus.Unverified
     })
-    await databaseService.users.insertOne(
+    const result = await databaseService.users.insertOne(
       new User({
         ...payload,
         _id: user_id,
         count_test: 1,
-        role: UserRole.Teacher,
+        role: 'teacher' as UserRole,
         email_verify_token: email_verify_token,
         password: hashPassword(payload.password)
       })
     )
+    console.log(result)
 
     return {}
   }
