@@ -88,14 +88,12 @@ class UserService {
       new User({
         ...payload,
         _id: user_id,
-        count_test: 1,
+        count_test: 0,
         role: 'teacher' as UserRole,
         email_verify_token: email_verify_token,
         password: hashPassword(payload.password)
       })
     )
-    console.log(result)
-
     return {}
   }
   async refreshToken(user_id: string, verify: UserVerifyStatus, refresh_token: string) {
