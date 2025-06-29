@@ -84,7 +84,7 @@ class UserService {
       user_id: user_id.toString(),
       verify: UserVerifyStatus.Unverified
     })
-    const result = await databaseService.users.insertOne(
+    await databaseService.users.insertOne(
       new User({
         ...payload,
         _id: user_id,
