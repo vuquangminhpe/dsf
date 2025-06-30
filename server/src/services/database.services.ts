@@ -11,6 +11,10 @@ import MasterExam from '../models/schemas/MasterExam.schema'
 import Feedback from '~/models/schemas/Feedback.schema'
 import Payment from '~/models/schemas/Payment.schema'
 import PackagePrice from '~/models/schemas/PackagePriceType.schema'
+import Subject from '~/models/schemas/Subject.schema'
+import Grade from '~/models/schemas/Comment.schema'
+import StudentComment from '~/models/schemas/Grade.schema'
+import CommentSchema from '~/models/schemas/Comment.schema'
 
 const uri =
   'mongodb+srv://minhvqhe176726:minhvqhe176726@management-employee.31yis.mongodb.net/?retryWrites=true&w=majority&appName=management-employee'
@@ -120,6 +124,21 @@ class DatabaseService {
   }
   get packages(): Collection<PackagePrice> {
     return this.db.collection('packages')
+  }
+  get subjects(): Collection<Subject> {
+    return this.db.collection('subjects')
+  }
+
+  get grades(): Collection<Grade> {
+    return this.db.collection('grades')
+  }
+
+  get studentComments(): Collection<StudentComment> {
+    return this.db.collection('student_comments')
+  }
+
+  get comments(): Collection<CommentSchema> {
+    return this.db.collection('comments')
   }
   async indexEmbeddings() {
     try {

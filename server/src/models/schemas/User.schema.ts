@@ -39,6 +39,7 @@ export default class UserType {
   class: string
   payment_status?: PaymentStatus
   teacher_level?: TeacherLevel
+  teacher_id?: ObjectId
   age?: number
   gender?: 'nam' | 'nữ'
   phone?: string
@@ -62,6 +63,7 @@ export default class UserType {
     this.class = user.class || ''
     this.payment_status = user.payment_status || PaymentStatus.NotPayment
     this.teacher_level = user.teacher_level
+    this.teacher_id = user.teacher_id
     this.age = user.age
     this.gender = user.gender
     this.phone = user.phone

@@ -327,3 +327,43 @@ export const FEEDBACK_MESSAGES = {
   FEEDBACK_ALREADY_RESOLVED: 'Feedback already resolved',
   FEEDBACK_ALREADY_CLOSED: 'Feedback already closed'
 } as const
+export const GRADES_MESSAGES = {
+  GET_SUBJECTS_SUCCESS: 'Lấy danh sách môn học thành công',
+  GET_CLASS_GRADES_SUCCESS: 'Lấy dữ liệu bảng điểm thành công',
+  GET_STUDENT_GRADES_SUCCESS: 'Lấy điểm học sinh thành công',
+  GET_COMMENTS_SUCCESS: 'Lấy thư viện nhận xét thành công',
+  CREATE_GRADE_SUCCESS: 'Tạo điểm thành công',
+  UPDATE_GRADE_SUCCESS: 'Cập nhật điểm thành công',
+  DELETE_GRADE_SUCCESS: 'Xóa điểm thành công',
+  BULK_UPDATE_SUCCESS: 'Cập nhật hàng loạt thành công',
+  EXPORT_GRADES_SUCCESS: 'Xuất dữ liệu thành công',
+  IMPORT_GRADES_SUCCESS: 'Nhập dữ liệu thành công',
+
+  // Validation errors
+  INVALID_GRADE_LEVEL: 'Cấp học không hợp lệ',
+  INVALID_CLASS_NAME: 'Tên lớp không hợp lệ',
+  INVALID_SUBJECT_ID: 'ID môn học không hợp lệ',
+  INVALID_SEMESTER: 'Học kỳ phải là 1 hoặc 2',
+  INVALID_SCHOOL_YEAR: 'Năm học không hợp lệ',
+  INVALID_STUDENT_ID: 'ID học sinh không hợp lệ',
+  INVALID_TEACHER_ID: 'ID giáo viên không hợp lệ',
+  INVALID_SCORE: 'Điểm phải từ 0 đến 10',
+  INVALID_EXAM_TYPE: 'Loại kiểm tra phải là TX, GK hoặc CK',
+  INVALID_COMMENT_TYPE: 'Loại nhận xét không hợp lệ',
+
+  // Business logic errors
+  SUBJECT_NOT_FOUND: 'Không tìm thấy môn học',
+  CLASS_NOT_FOUND: 'Không tìm thấy lớp học',
+  STUDENT_NOT_FOUND: 'Không tìm thấy học sinh',
+  GRADE_NOT_FOUND: 'Không tìm thấy điểm',
+  COMMENT_NOT_FOUND: 'Không tìm thấy nhận xét',
+  NO_PERMISSION: 'Không có quyền truy cập',
+  CLASS_EMPTY: 'Lớp học không có học sinh',
+
+  // Data errors
+  GRADES_DATA_INVALID: 'Dữ liệu điểm không hợp lệ',
+  COMMENTS_DATA_INVALID: 'Dữ liệu nhận xét không hợp lệ',
+  BULK_UPDATE_FAILED: 'Cập nhật hàng loạt thất bại',
+  EXPORT_FAILED: 'Xuất dữ liệu thất bại',
+  IMPORT_FAILED: 'Nhập dữ liệu thất bại'
+} as const

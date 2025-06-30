@@ -6,6 +6,7 @@ import searchRouter from './search.routes'
 import teacherRouter from './teacher.routes'
 import feedbackRouter from './feedback.routes'
 import paymentRouter from './payment.routes'
+import gradesRouter from './grades.routes'
 
 const apiRouter = Router()
 apiRouter.use('/questions', questionsRouter)
@@ -15,4 +16,6 @@ apiRouter.use('/search', searchRouter)
 apiRouter.use('/teacher', teacherRouter)
 apiRouter.use('/payments', paymentRouter)
 apiRouter.use('/feedbacks', feedbackRouter)
+apiRouter.use('/grades', gradesRouter)
+
 export default apiRouter

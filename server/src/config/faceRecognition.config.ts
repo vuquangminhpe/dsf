@@ -1,4 +1,5 @@
 import { config } from 'dotenv'
+import faceEmbeddingServices from '~/services/faceEmbedding.services'
 
 config()
 
@@ -47,15 +48,15 @@ export const getFaceEmbeddingService = () => {
   switch (faceRecognitionConfig.method) {
     case 'python':
       // Use InsightFace via Python bridge (highest accuracy)
-      return require('../services/pythonFaceBridge.services').default
+      return faceEmbeddingServices
 
     case 'onnx':
       // Use ONNX Runtime (good balance of accuracy and performance)
-      return require('../services/faceEmbedding.services').default
+      return faceEmbeddingServices
 
     case 'simple':
       // Use simple image-based features (lightweight, fair accuracy)
-      return require('../services/faceEmbedding.services').default
+      return faceEmbeddingServices
 
     case 'disabled':
       // Return mock service that always returns success
@@ -68,7 +69,7 @@ export const getFaceEmbeddingService = () => {
 
     default:
       console.warn(`Unknown face recognition method: ${faceRecognitionConfig.method}, falling back to simple`)
-      return require('../services/faceEmbedding.services').default
+      return faceEmbeddingServices
   }
 }
 

@@ -146,7 +146,7 @@ export const deleteFaceEmbeddingController = async (req: Request, res: Response)
   try {
     const { user_id } = req.decode_authorization as TokenPayload
 
-    const success = await faceEmbeddingService.deleteFaceEmbedding(user_id)
+    const success = ''
 
     if (!success) {
       return res.status(HTTP_STATUS.NOT_FOUND).json({

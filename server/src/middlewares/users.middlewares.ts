@@ -7,21 +7,17 @@ import { hashPassword } from '../utils/crypto'
 import { verifyToken } from '../utils/jwt'
 import { ErrorWithStatus } from '../models/Errors'
 import HTTP_STATUS from '../constants/httpStatus'
-import { JsonWebTokenError } from 'jsonwebtoken'
-import _, { capitalize } from 'lodash'
+import jwt from 'jsonwebtoken'
 import { NextFunction, Request, RequestHandler } from 'express'
 import { ObjectId } from 'mongodb'
 import { TokenPayload } from '../models/request/User.request'
-import { AccountStatus, UserVerifyStatus } from '../constants/enums'
+import { UserVerifyStatus } from '../constants/enums'
 import { REGEX_USERNAME } from '../constants/regex'
-import { ParsedQs } from 'qs'
-import { ParamsDictionary } from 'express-serve-static-core'
-import { Response as ExpressResponse } from 'express-serve-static-core'
 import { verifyAccessToken } from '../utils/common'
 import { envConfig } from '../constants/config'
 import valkeyService from '../services/valkey.services'
-
-type ExpressMiddleware = RequestHandler<ParamsDictionary, any, any, ParsedQs, Record<string, any>>
+import _ from 'lodash'
+const { JsonWebTokenError } = jwt
 const passwordSchema: ParamSchema = {
   notEmpty: {
     errorMessage: USERS_MESSAGES.PASSWORD_IS_REQUIRED
@@ -293,7 +289,7 @@ export const emailVerifyTokenValidator = validate(
               ;(req as Request).decoded_email_verify_token = decoded_email_verify_token
             } catch (error) {
               throw new ErrorWithStatus({
-                message: capitalize((error as JsonWebTokenError).message),
+                message: _.capitalize((error as any).message),
                 status: HTTP_STATUS.UNAUTHORIZED
               })
             }

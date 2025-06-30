@@ -7,6 +7,7 @@ interface ExamType {
   teacher_id: ObjectId
   question_ids: ObjectId[]
   duration: number
+  subject_id: ObjectId
   start_time?: Date
   created_at?: Date
   active?: boolean
@@ -20,6 +21,7 @@ export default class Exam {
   exam_code: string
   teacher_id: ObjectId
   question_ids: ObjectId[]
+  subject_id: ObjectId
   duration: number
   start_time?: Date
   created_at: Date
@@ -36,6 +38,7 @@ export default class Exam {
     duration,
     start_time,
     created_at,
+    subject_id,
     active,
     master_exam_id,
     number_active_students
@@ -49,6 +52,7 @@ export default class Exam {
     this.duration = duration
     this.start_time = start_time
     this.created_at = created_at || date
+    this.subject_id = subject_id
     this.active = active !== undefined ? active : true
     this.master_exam_id = master_exam_id
     this.number_active_students = number_active_students || 0
