@@ -441,7 +441,7 @@ class UserService {
   }) {
     const apiKey = process.env.GERMINI_API_KEY
     const genAI = new GoogleGenerativeAI(apiKey as string)
-    const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' })
+    const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash-lite-preview-06-17' })
     const result = await model.generateContent(PROMPT_CHAT(body))
 
     const response = await result.response

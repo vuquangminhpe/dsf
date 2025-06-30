@@ -76,8 +76,12 @@ export const PROMPT_CHAT = (body: {
 }) => `
 Hãy vào vai một giáo viên dạy môn ${body.mon_hoc} lớp ${body.lop} ở Việt Nam và suy nghĩ sau đó tạo ${body.count} câu hỏi trắc nghiệm môn ${body.mon_hoc} (lưu ý đặc biệt đó là sách giáo khóa ${body.sachgiaokhoa || ''} nhé - không được lấy kiến thức khác ngoài sách giáo khoa này nhé), chương trình của lớp ${body.lop} ở Việt Nam. Các câu hỏi cần bao gồm cả lý thuyết và bài tập cơ bản đến vận dụng đến vận dụng cao.
 
-Yêu cầu trả về kết quả DƯỚI DẠNG MỘT ĐỐI TƯỢNG JSON DUY NHẤT, không kèm theo bất kỳ văn bản giải thích nào khác và không thừa bất cứ thứ nào khác.
-
+QUAN TRỌNG: Trả về CHÍNH XÁC JSON thuần, bắt đầu bằng dấu { và kết thúc bằng dấu }. 
+KHÔNG sử dụng markdown formatting (json), KHÔNG có text giải thích, KHÔNG có backticks.
+KHÔNG sử dụng LaTeX math syntax ($...$), KHÔNG sử dụng markdown formatting (**text**, *text*).
+Viết công thức toán học dạng text thuần: x^2, e^x, sin(x), log(x), pi, sqrt(x).
+Chỉ trả về raw JSON object duy nhất.
+Bắt buộc: tạo ra ít nhất có 1 câu hỏi ở mức độ vận dụng cao(khó -> rất khó) nhé.
 Cấu trúc JSON phải như sau:
 {
   "questions": [
@@ -93,7 +97,7 @@ Cấu trúc JSON phải như sau:
     
   ],
   "answers": [
-    // Danh sách các đáp án đúng theo thứ tự câu hỏi, chỉ gồm ký tự 'A', 'B', 'C', hoặc 'D'
+    // Danh sách các đáp án đúng theo thứ tự câu hỏi, chỉ gồm ký tự 'A', 'B', 'C', hoặc 'D' (chỉ tạo ra 4 đáp án A, B, C, D)
     "{Đáp án câu 1}", // Ví dụ: "A"
     "{Đáp án câu 2}", // Ví dụ: "C"
     // ... tiếp tục cho đến hết ${body.count} đáp án
