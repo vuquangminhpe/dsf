@@ -212,7 +212,7 @@ class UserService {
       token: refresh_token,
       created_at: new Date()
     })
-    // https://tweeterclone-six.vercel.app
+
     return access_token
   }
   async logout(refresh_token: string) {

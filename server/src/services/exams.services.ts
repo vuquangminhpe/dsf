@@ -30,17 +30,18 @@ class ExamService {
     teacher_id,
     question_count,
     duration,
-    start_time = null, // New optional parameter
+    start_time = null,
+    subject_id,
     master_exam_id
   }: {
     title: string
     teacher_id: string
     question_count: number
     duration: number
+    subject_id?: number
     start_time?: Date | null
     master_exam_id: string
   }) {
-    // Get random questions from this teacher's question bank
     const questions = await questionService.getRandomQuestions(teacher_id, question_count, master_exam_id)
 
     if (questions.length === 0) {
@@ -63,8 +64,9 @@ class ExamService {
       teacher_id: new ObjectId(teacher_id),
       question_ids: questions.map((q) => q._id),
       duration,
-      start_time: start_time || undefined, // Use undefined to avoid setting null in MongoDB
+      start_time: start_time || undefined,
       active: true,
+      subject_id: subject_id as number,
       master_exam_id: new ObjectId(master_exam_id)
     })
 
@@ -91,8 +93,6 @@ class ExamService {
   async getExamById(exam_id: string) {
     return await databaseService.exams.findOne({ _id: new ObjectId(exam_id) })
   }
-
-
 
   async getExamWithQuestions(exam_id: string) {
     const exam = await databaseService.exams.findOne({ _id: new ObjectId(exam_id) })

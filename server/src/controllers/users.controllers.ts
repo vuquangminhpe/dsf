@@ -33,13 +33,24 @@ config()
 export const loginController = async (req: Request<ParamsDictionary, any, LoginReqBody>, res: Response) => {
   const user = req.user as User
   const user_id = user._id as ObjectId
+  const user_response = {
+    _id: user_id.toString(),
+    name: user.name,
+    username: user.username,
+    email: user.email,
+    avatar: user.avatar,
+    role: user.role,
+    class: user.class,
+
+    teacher_level: user.teacher_level
+  }
 
   const result = await usersService.login({ user_id: user_id.toString(), verify: UserVerifyStatus.Verified })
   res.status(200).json({
     message: USERS_MESSAGES.LOGIN_SUCCESS,
     result: {
       access_token: result,
-      user
+      user: user_response
     }
   })
 }
