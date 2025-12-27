@@ -373,23 +373,6 @@ export const registerStudentController = async (
       })
     }
 
-    // Validate face image
-    if (!req.file) {
-      return res.status(HTTP_STATUS.BAD_REQUEST).json({
-        message: 'Face image is required for student registration'
-      })
-    }
-
-    console.log(`👤 Registering student: ${name}, Class: ${studentClass}`)
-
-    // Check if username already exists
-    const existingUser = await databaseService.users.findOne({ username })
-    if (existingUser) {
-      return res.status(HTTP_STATUS.CONFLICT).json({
-        message: 'Username already exists'
-      })
-    }
-
     // Validate age
     const studentAge = typeof age === 'string' ? parseInt(age) : age
     if (isNaN(studentAge) || studentAge < 5 || studentAge > 25) {
