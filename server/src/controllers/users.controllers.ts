@@ -388,6 +388,9 @@ export const registerStudentController = async (
       })
     }
 
+    // Generate unique user_code
+    const user_code = `UC${Date.now()}${Math.random().toString(36).substring(2, 7).toUpperCase()}`
+
     // Create student user document
     const studentUser = {
       name: name.trim(),
@@ -402,6 +405,7 @@ export const registerStudentController = async (
       age: studentAge,
       phone: phone || '',
       teacher_id: new ObjectId(teacher_id),
+      user_code,
       bio: `Học sinh lớp ${studentClass}`,
       avatar: '', // Will be set after face processing
       cover_photo: '',
@@ -465,6 +469,7 @@ export const registerStudentController = async (
         credentials: {
           username,
           password, // Return plain password for teacher to give to student
+          user_code, // Return user_code for exam access
           login_url: process.env.CLIENT_URL || 'http://localhost:3000'
         },
         face_embedding_status: 'processed',

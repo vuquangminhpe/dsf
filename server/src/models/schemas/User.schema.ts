@@ -44,6 +44,7 @@ export default class UserType {
   gender?: 'nam' | 'nữ'
   phone?: string
   created_by_teacher?: ObjectId
+  user_code?: string
 
   constructor(user: UserType) {
     const date = new Date()
@@ -68,5 +69,6 @@ export default class UserType {
     this.gender = user.gender
     this.phone = user.phone
     this.created_by_teacher = user.created_by_teacher
+    this.user_code = user.user_code
   }
 }

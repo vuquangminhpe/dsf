@@ -5,10 +5,14 @@ import ExamSession from '../models/schemas/ExamSession.schema'
 import examService from './exams.services'
 import { ErrorWithStatus } from '~/models/Errors'
 import HTTP_STATUS from '../constants/httpStatus'
+import { signToken } from '../utils/jwt'
+import { envConfig } from '../constants/config'
+import { TokenType, UserVerifyStatus } from '../constants/enums'
 
 interface StartExamOptions {
   exam_code: string
   student_id: string
+  user_code?: string
   has_camera?: boolean
   device_info?: {
     user_agent: string
@@ -21,20 +25,60 @@ class ExamSessionService {
   /**
    * Enhanced start exam session with camera detection
    */
-  async startExamSession({ exam_code, student_id, has_camera = false, device_info }: StartExamOptions) {
+  async startExamSession({ exam_code, student_id, user_code, has_camera = false, device_info }: StartExamOptions) {
     // Get exam by code
     const exam = await databaseService.exams.findOne({ exam_code })
     if (!exam) {
       throw new Error('Không tìm thấy bài kiểm tra với mã code này')
     }
 
+    // Verify user_code if provided and auto-generate access token
+    let access_token: string | undefined
+    let verified_student_id = student_id
+
+    if (user_code) {
+      // Find user by user_code
+      const user = await databaseService.users.findOne({ user_code })
+
+      if (!user) {
+        throw new ErrorWithStatus({
+          message: 'Mã user_code không hợp lệ',
+          status: HTTP_STATUS.UNAUTHORIZED
+        })
+      }
+
+      // Verify that the user_code matches the student_id (if student_id is provided)
+      if (student_id && user._id.toString() !== student_id) {
+        throw new ErrorWithStatus({
+          message: 'Mã user_code không khớp với thông tin học sinh',
+          status: HTTP_STATUS.FORBIDDEN
+        })
+      }
+
+      // Use the verified user's ID
+      verified_student_id = user._id.toString()
+
+      // Generate access token for the student
+      access_token = await signToken({
+        payload: {
+          user_id: verified_student_id,
+          user_type: TokenType.AccessToken,
+          verify: user.verify || UserVerifyStatus.Verified
+        },
+        privateKey: envConfig.privateKey_access_token as string,
+        optional: {
+          expiresIn: envConfig.expiresIn_access_token
+        }
+      })
+    }
+
     // Log device information
-    await this.logDeviceInfo(student_id, device_info)
+    await this.logDeviceInfo(verified_student_id, device_info)
 
     // Check for existing incomplete session
     const existingSession = await databaseService.examSessions.findOne({
       exam_id: exam._id,
-      student_id: new ObjectId(student_id),
+      student_id: new ObjectId(verified_student_id),
       completed: false
     })
 
@@ -48,7 +92,8 @@ class ExamSessionService {
           ? this.calculateRemainingTime(existingSession.start_time, exam.duration)
           : exam.duration * 60,
         camera_required: false,
-        has_camera
+        has_camera,
+        access_token
       }
     }
 
@@ -59,9 +104,9 @@ class ExamSessionService {
     //   completed: true
     // })
 
-    const master_exam = await databaseService.masterExams.findOne({
-      _id: exam.master_exam_id
-    })
+    // const master_exam = await databaseService.masterExams.findOne({
+    //   _id: exam.master_exam_id
+    // })
 
     // // Validation checks
     // if (!exam.active) {
@@ -75,12 +120,12 @@ class ExamSessionService {
     //   })
     // }
 
-    if (exam.start_time && new Date() < exam.start_time) {
-      const startTimeStr = master_exam?.start_time ? new Date(master_exam.start_time).toLocaleString() : 'giờ đã đặt'
-      throw new Error(
-        `Chưa đến giờ thi, vui lòng chờ đến giờ thi ${startTimeStr} để bắt đầu kỳ thi, hoặc liên hệ giáo viên nếu có vấn đề!!!`
-      )
-    }
+    // if (exam.start_time && new Date() < exam.start_time) {
+    //   const startTimeStr = master_exam?.start_time ? new Date(master_exam.start_time).toLocaleString() : 'giờ đã đặt'
+    //   throw new Error(
+    //     `Chưa đến giờ thi, vui lòng chờ đến giờ thi ${startTimeStr} để bắt đầu kỳ thi, hoặc liên hệ giáo viên nếu có vấn đề!!!`
+    //   )
+    // }
 
     // const numActiveStudents = exam.number_active_students !== undefined ? Number(exam.number_active_students) : 0
 
@@ -98,7 +143,7 @@ class ExamSessionService {
     // Create new session
     const session = new ExamSession({
       exam_id: exam._id,
-      student_id: new ObjectId(student_id),
+      student_id: new ObjectId(verified_student_id),
       start_time: new Date()
     })
 
@@ -117,7 +162,8 @@ class ExamSessionService {
       exam: examWithQuestions,
       remaining_time: exam.duration * 60,
       camera_required: false,
-      has_camera
+      has_camera,
+      access_token
     }
   }
 

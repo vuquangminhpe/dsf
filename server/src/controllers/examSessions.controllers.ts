@@ -84,7 +84,8 @@ export const startExamController = async (req: Request, res: Response) => {
         total_questions: result.exam.questions.length,
         questions: result.exam.questions,
         has_camera: result.has_camera,
-        device_info: parsedDeviceInfo
+        device_info: parsedDeviceInfo,
+        access_token: result.access_token
       }
     })
   } catch (error) {
@@ -96,7 +97,7 @@ export const startExamController = async (req: Request, res: Response) => {
       if (
         error.message.includes('Không tìm thấy bài kiểm tra') ||
         error.message.includes('đã làm bài kiểm tra') ||
-        error.message.includes('Chưa đến giờ thi') ||
+        // error.message.includes('Chưa đến giờ thi') ||
         error.message.includes('hiện đã có người khác')
       ) {
         return res.status(HTTP_STATUS.BAD_REQUEST).json({
