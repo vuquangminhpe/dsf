@@ -30,13 +30,26 @@ export const uploadFaceImageMiddleware = upload.single('face_image')
  */
 export const startExamController = async (req: Request, res: Response) => {
   try {
-    const { user_id } = req.decode_authorization as TokenPayload
-    const { exam_code, has_camera = false, require_face_verification = true, device_info } = req.body
+    const { exam_code, user_code, has_camera = false, require_face_verification = true, device_info } = req.body
     console.log('req.body:', req.body)
 
     if (!exam_code) {
       return res.status(HTTP_STATUS.BAD_REQUEST).json({
         message: 'Exam code is required'
+      })
+    }
+
+    // Lấy student_id từ token (nếu đã đăng nhập) hoặc để undefined nếu dùng user_code
+    let student_id: string | undefined
+    if (req.decode_authorization) {
+      const { user_id } = req.decode_authorization as TokenPayload
+      student_id = user_id
+    }
+
+    // Phải có ít nhất một trong hai: token hoặc user_code
+    if (!student_id && !user_code) {
+      return res.status(HTTP_STATUS.UNAUTHORIZED).json({
+        message: 'Either access token or user_code is required'
       })
     }
 
@@ -69,7 +82,8 @@ export const startExamController = async (req: Request, res: Response) => {
 
     const result = await examSessionService.startExamSession({
       exam_code,
-      student_id: user_id,
+      student_id: student_id!,
+      user_code,
       has_camera,
       device_info: parsedDeviceInfo
     })

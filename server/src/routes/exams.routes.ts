@@ -29,7 +29,11 @@ import {
   checkCameraAvailabilityController,
   uploadFaceImageMiddleware
 } from '../controllers/examSessions.controllers'
-import { AccessTokenValidator, verifiedUserValidator } from '../middlewares/users.middlewares'
+import {
+  AccessTokenValidator,
+  OptionalAccessTokenValidator,
+  verifiedUserValidator
+} from '../middlewares/users.middlewares'
 import { teacherRoleValidator, typeCountValidator_Teacher } from '../middlewares/role.middlewares'
 import { wrapAsync } from '../utils/handler'
 import { generateExamValidator } from '../middlewares/exam.validator'
@@ -43,7 +47,17 @@ import {
 
 const examsRouter = Router()
 
-// All routes require authentication and verification
+// ===== PUBLIC ROUTES (không yêu cầu bắt buộc token) =====
+// Enhanced start exam with camera detection - cho phép dùng user_code thay vì token
+examsRouter.post(
+  '/start',
+  OptionalAccessTokenValidator,
+  startExamValidator,
+  uploadFaceImageMiddleware,
+  wrapAsync(startExamController)
+)
+
+// All other routes require authentication and verification
 examsRouter.use(AccessTokenValidator, verifiedUserValidator)
 
 // ===== TEACHER ROUTES =====
@@ -99,9 +113,6 @@ examsRouter.get(
 )
 
 // ===== STUDENT ROUTES =====
-
-// Enhanced start exam with camera detection
-examsRouter.post('/start', startExamValidator, uploadFaceImageMiddleware, wrapAsync(startExamController))
 
 // Submit exam
 examsRouter.post('/submit', submitExamValidator, wrapAsync(submitExamController))

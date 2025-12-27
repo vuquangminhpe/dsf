@@ -213,6 +213,36 @@ export const AccessTokenValidator = validate(
   )
 )
 
+// Optional Access Token Validator - không bắt buộc phải có token
+export const OptionalAccessTokenValidator = validate(
+  checkSchema(
+    {
+      Authorization: {
+        optional: true,
+        custom: {
+          options: async (value: string, { req }) => {
+            if (!value) {
+              return true
+            }
+            const access_token = value.split(' ')[1]
+            if (!access_token) {
+              return true
+            }
+
+            try {
+              return await verifyAccessToken(access_token, req as Request)
+            } catch (error) {
+              // Nếu token không hợp lệ, vẫn cho phép request tiếp tục
+              return true
+            }
+          }
+        }
+      }
+    },
+    ['headers']
+  )
+)
+
 export const RefreshTokenValidator = validate(
   checkSchema(
     {
