@@ -12,7 +12,7 @@ import { body, query } from 'express-validator'
 import databaseService from '~/services/database.services'
 import { ObjectId } from 'mongodb'
 import { UserRole } from '~/models/schemas/User.schema'
-import faceEmbeddingServices from '~/services/faceEmbedding.services'
+// import faceEmbeddingServices from '~/services/faceEmbedding.services'
 
 const teacherRouter = Router()
 
@@ -183,7 +183,8 @@ teacherRouter.put(
         }
 
         // Process face image
-        const success = await faceEmbeddingServices.storeFaceEmbedding(student_id, req.file.buffer)
+        // const success = await faceEmbeddingServices.storeFaceEmbedding(student_id, req.file.buffer)
+        const success = false
 
         if (!success) {
           return res.status(400).json({

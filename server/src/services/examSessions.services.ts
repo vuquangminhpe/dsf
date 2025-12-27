@@ -5,23 +5,10 @@ import ExamSession from '../models/schemas/ExamSession.schema'
 import examService from './exams.services'
 import { ErrorWithStatus } from '~/models/Errors'
 import HTTP_STATUS from '../constants/httpStatus'
-import faceEmbeddingService from './faceEmbedding.services'
-
-interface FaceVerificationLog {
-  session_id: ObjectId
-  student_id: ObjectId
-  verified: boolean
-  similarity: number
-  confidence: 'high' | 'medium' | 'low'
-  timestamp: Date
-  image_hash?: string
-}
 
 interface StartExamOptions {
   exam_code: string
   student_id: string
-  face_image_buffer?: Buffer
-  require_face_verification?: boolean
   has_camera?: boolean
   device_info?: {
     user_agent: string
@@ -34,14 +21,7 @@ class ExamSessionService {
   /**
    * Enhanced start exam session with camera detection
    */
-  async startExamSession({
-    exam_code,
-    student_id,
-    face_image_buffer,
-    require_face_verification = true,
-    has_camera = false,
-    device_info
-  }: StartExamOptions) {
+  async startExamSession({ exam_code, student_id, has_camera = false, device_info }: StartExamOptions) {
     // Get exam by code
     const exam = await databaseService.exams.findOne({ exam_code })
     if (!exam) {
@@ -67,34 +47,33 @@ class ExamSessionService {
         remaining_time: existingSession?.start_time
           ? this.calculateRemainingTime(existingSession.start_time, exam.duration)
           : exam.duration * 60,
-        face_verified: has_camera ? await this.checkExistingFaceVerification(existingSession._id!.toString()) : null,
-        camera_required: false, // Existing session doesn't require camera check
+        camera_required: false,
         has_camera
       }
     }
 
     // Check if student already completed this exam
-    const completed_session = await databaseService.examSessions.findOne({
-      exam_id: exam._id,
-      student_id: new ObjectId(student_id),
-      completed: true
-    })
+    // const completed_session = await databaseService.examSessions.findOne({
+    //   exam_id: exam._id,
+    //   student_id: new ObjectId(student_id),
+    //   completed: true
+    // })
 
     const master_exam = await databaseService.masterExams.findOne({
       _id: exam.master_exam_id
     })
 
-    // Validation checks
-    if (!exam.active) {
-      throw new Error('Bài kiểm tra này hiện đã bị vô hiệu hóa')
-    }
+    // // Validation checks
+    // if (!exam.active) {
+    //   throw new Error('Bài kiểm tra này hiện đã bị vô hiệu hóa')
+    // }
 
-    if (completed_session) {
-      throw new ErrorWithStatus({
-        message: `Bạn đã làm bài kiểm tra trong ${exam.title.split('#')[0]}. Nếu có sai sót hãy liên hệ với giáo viên`,
-        status: HTTP_STATUS.BAD_REQUEST
-      })
-    }
+    // if (completed_session) {
+    //   throw new ErrorWithStatus({
+    //     message: `Bạn đã làm bài kiểm tra trong ${exam.title.split('#')[0]}. Nếu có sai sót hãy liên hệ với giáo viên`,
+    //     status: HTTP_STATUS.BAD_REQUEST
+    //   })
+    // }
 
     if (exam.start_time && new Date() < exam.start_time) {
       const startTimeStr = master_exam?.start_time ? new Date(master_exam.start_time).toLocaleString() : 'giờ đã đặt'
@@ -103,60 +82,18 @@ class ExamSessionService {
       )
     }
 
-    const numActiveStudents = exam.number_active_students !== undefined ? Number(exam.number_active_students) : 0
+    // const numActiveStudents = exam.number_active_students !== undefined ? Number(exam.number_active_students) : 0
 
-    if (numActiveStudents >= 1) {
-      throw new Error(
-        `Bài kiểm tra này hiện đã có người khác đang làm hoặc đã hoàn thành trong ${exam.title.split('#')[0]}, vui lòng liên hệ giáo viên để lấy 1 mã code mới`
-      )
-    }
+    // if (numActiveStudents >= 1) {
+    //   throw new Error(
+    //     `Bài kiểm tra này hiện đã có người khác đang làm hoặc đã hoàn thành trong ${exam.title.split('#')[0]}, vui lòng liên hệ giáo viên để lấy 1 mã code mới`
+    //   )
+    // }
 
-    // Enhanced face verification logic
-    let faceVerificationResult = null
-    const shouldRequireFaceVerification = require_face_verification && has_camera
-
-    if (shouldRequireFaceVerification) {
-      if (!face_image_buffer) {
-        throw new ErrorWithStatus({
-          message: 'Cần ảnh khuôn mặt để xác thực danh tính trước khi bắt đầu bài thi',
-          status: HTTP_STATUS.BAD_REQUEST
-        })
-      }
-
-      try {
-        faceVerificationResult = await faceEmbeddingService.verifyFace(student_id, face_image_buffer)
-
-        if (!faceVerificationResult.isMatch) {
-          throw new ErrorWithStatus({
-            message: `Xác thực khuôn mặt không thành công. Độ tương đồng: ${(faceVerificationResult.similarity * 100).toFixed(1)}%. Vui lòng đảm bảo khuôn mặt rõ ràng và thử lại.`,
-            status: HTTP_STATUS.FORBIDDEN
-          })
-        }
-      } catch (error) {
-        if (error instanceof ErrorWithStatus) {
-          throw error
-        }
-
-        // Handle case where user has no stored face embedding
-        if (error instanceof Error && error.message.includes('No stored face embedding')) {
-          throw new ErrorWithStatus({
-            message:
-              'Chưa có dữ liệu khuôn mặt. Vui lòng cập nhật ảnh đại diện trong hồ sơ cá nhân trước khi làm bài thi.',
-            status: HTTP_STATUS.BAD_REQUEST
-          })
-        }
-
-        throw new ErrorWithStatus({
-          message: 'Lỗi kỹ thuật trong quá trình xác thực khuôn mặt. Vui lòng thử lại.',
-          status: HTTP_STATUS.INTERNAL_SERVER_ERROR
-        })
-      }
-    }
-
-    // Update exam active student count
-    if (numActiveStudents === 0 && (!exam.start_time || new Date() > exam.start_time)) {
-      await databaseService.exams.updateOne({ _id: exam._id }, { $set: { number_active_students: 1 } })
-    }
+    // // Update exam active student count
+    // if (numActiveStudents === 0 && (!exam.start_time || new Date() > exam.start_time)) {
+    //   await databaseService.exams.updateOne({ _id: exam._id }, { $set: { number_active_students: 1 } })
+    // }
 
     // Create new session
     const session = new ExamSession({
@@ -167,23 +104,9 @@ class ExamSessionService {
 
     await databaseService.examSessions.insertOne(session)
 
-    // Log successful face verification if it was performed
-    if (shouldRequireFaceVerification && faceVerificationResult && face_image_buffer) {
-      await this.logFaceVerification({
-        session_id: session._id!,
-        student_id: new ObjectId(student_id),
-        verified: true,
-        similarity: faceVerificationResult.similarity,
-        confidence: faceVerificationResult.confidence,
-        timestamp: new Date()
-      })
-    }
-
     // Log session start with device info
     await this.logSessionStart(session._id!.toString(), {
       has_camera,
-      face_verification_required: shouldRequireFaceVerification,
-      face_verification_success: faceVerificationResult?.isMatch || false,
       device_info
     })
 
@@ -193,10 +116,8 @@ class ExamSessionService {
       session,
       exam: examWithQuestions,
       remaining_time: exam.duration * 60,
-      face_verified: shouldRequireFaceVerification ? faceVerificationResult?.isMatch : null,
-      camera_required: shouldRequireFaceVerification,
-      has_camera,
-      face_verification_similarity: faceVerificationResult?.similarity || null
+      camera_required: false,
+      has_camera
     }
   }
 
@@ -233,8 +154,6 @@ class ExamSessionService {
     sessionId: string,
     sessionInfo: {
       has_camera: boolean
-      face_verification_required: boolean
-      face_verification_success: boolean
       device_info?: any
     }
   ): Promise<void> {
@@ -246,118 +165,6 @@ class ExamSessionService {
       })
     } catch (error) {
       console.error('Error logging session start:', error)
-    }
-  }
-
-  /**
-   * Check if existing session has face verification
-   */
-  private async checkExistingFaceVerification(sessionId: string): Promise<boolean> {
-    try {
-      const verification = await databaseService.db
-        .collection('face_verifications')
-        .findOne({ session_id: new ObjectId(sessionId) }, { sort: { timestamp: -1 } })
-
-      return verification?.verified || false
-    } catch (error) {
-      console.error('Error checking existing face verification:', error)
-      return false
-    }
-  }
-
-  /**
-   * Original face verification logging method
-   */
-  private async logFaceVerification(verificationLog: FaceVerificationLog): Promise<void> {
-    try {
-      await databaseService.db.collection('face_verifications').insertOne(verificationLog)
-    } catch (error) {
-      console.error('Error logging face verification:', error)
-    }
-  }
-
-  /**
-   * Get face verification history for a session
-   */
-  async getFaceVerificationHistory(sessionId: string): Promise<FaceVerificationLog[]> {
-    try {
-      const verifications = await databaseService.db
-        .collection('face_verifications')
-        .find({ session_id: new ObjectId(sessionId) })
-        .sort({ timestamp: -1 })
-        .toArray()
-
-      return verifications as any as FaceVerificationLog[]
-    } catch (error) {
-      console.error('Error getting face verification history:', error)
-      return []
-    }
-  }
-
-  /**
-   * Verify face during exam (periodic check) - enhanced
-   */
-  async verifyFaceDuringExam(
-    sessionId: string,
-    studentId: string,
-    faceImageBuffer: Buffer,
-    hasCamera: boolean = true
-  ): Promise<{
-    verified: boolean
-    similarity: number
-    confidence: 'high' | 'medium' | 'low'
-    action_required?: string
-  }> {
-    try {
-      // If no camera, skip verification
-      if (!hasCamera) {
-        return {
-          verified: true,
-          similarity: 1.0,
-          confidence: 'high',
-          action_required: undefined
-        }
-      }
-
-      const verificationResult = await faceEmbeddingService.verifyFace(studentId, faceImageBuffer)
-
-      // Log verification
-      await this.logFaceVerification({
-        session_id: new ObjectId(sessionId),
-        student_id: new ObjectId(studentId),
-        verified: verificationResult.isMatch,
-        similarity: verificationResult.similarity,
-        confidence: verificationResult.confidence,
-        timestamp: new Date()
-      })
-
-      // Determine action based on verification result
-      let action_required: string | undefined
-
-      if (!verificationResult.isMatch) {
-        if (verificationResult.similarity < 0.3) {
-          action_required = 'TERMINATE_EXAM' // Very low similarity - different person
-        } else if (verificationResult.similarity < 0.5) {
-          action_required = 'RECORD_VIOLATION' // Low similarity - suspicious
-        } else {
-          action_required = 'WARNING' // Medium similarity - warn student
-        }
-      }
-
-      return {
-        verified: verificationResult.isMatch,
-        similarity: verificationResult.similarity,
-        confidence: verificationResult.confidence,
-        action_required
-      }
-    } catch (error) {
-      console.error('Error verifying face during exam:', error)
-      return {
-        verified: hasCamera ? false : true, // If no camera, don't fail verification
-        similarity: 0,
-        confidence: 'low',
-        action_required: hasCamera ? 'TECHNICAL_ERROR' : undefined
-      }
     }
   }
 
@@ -518,10 +325,6 @@ class ExamSessionService {
           _id: session.exam_id
         })
 
-        // Get face verification status
-        const faceVerifications = await this.getFaceVerificationHistory(session._id!.toString())
-        const latestVerification = faceVerifications[0]
-
         // Get session log for device info
         const sessionLog = await databaseService.db.collection('session_logs').findOne({ session_id: session._id })
 
@@ -529,8 +332,6 @@ class ExamSessionService {
           ...session,
           exam_title: exam ? exam.title : 'Unknown Exam',
           duration: exam ? exam.duration : 0,
-          face_verified: latestVerification?.verified || false,
-          face_verification_confidence: latestVerification?.confidence || 'unknown',
           had_camera: sessionLog?.has_camera || false,
           device_type: sessionLog?.device_info?.device_type || 'unknown'
         }
@@ -561,9 +362,7 @@ class ExamSessionService {
           mobile: sessionLogs.filter((log) => log.device_info?.device_type === 'mobile').length,
           tablet: sessionLogs.filter((log) => log.device_info?.device_type === 'tablet').length,
           unknown: sessionLogs.filter((log) => !log.device_info?.device_type).length
-        },
-        face_verification_required: sessionLogs.filter((log) => log.face_verification_required).length,
-        face_verification_success: sessionLogs.filter((log) => log.face_verification_success).length
+        }
       }
 
       return deviceStats

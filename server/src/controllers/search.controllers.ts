@@ -1,12 +1,12 @@
 import { Request, Response } from 'express'
 import HTTP_STATUS from '../constants/httpStatus'
 import { TokenPayload } from '../models/request/User.request'
-import embeddingService from '../services/embedding.services'
+// import embeddingService from '../services/embedding.services'
 import { UserRole } from '../models/schemas/User.schema'
 import databaseService from '../services/database.services'
 import { ObjectId } from 'mongodb'
 import multer from 'multer'
-import searchEngine from '~/services/helps/SearchEngine.services'
+// import searchEngine from '~/services/helps/SearchEngine.services'
 
 // Configure multer for image upload
 const storage = multer.memoryStorage()
@@ -49,7 +49,8 @@ export const searchStudentsByTextController = async (req: Request, res: Response
       })
     }
 
-    const results = await searchEngine.searchUsersByText(search_text.trim(), 'student')
+    // const results = await searchEngine.searchUsersByText(search_text.trim(), 'student')
+    const results: any[] = []
 
     res.json({
       message: 'Students search completed successfully',
@@ -90,7 +91,8 @@ export const searchStudentsByImageController = async (req: Request, res: Respons
       })
     }
 
-    const results = await embeddingService.searchUsersByImageEnhanced(req.file.buffer, 'student')
+    // const results = await embeddingService.searchUsersByImageEnhanced(req.file.buffer, 'student')
+    const results: any[] = []
 
     res.json({
       message: 'Image-based students search completed successfully',
@@ -130,7 +132,8 @@ export const searchTeachersByTextController = async (req: Request, res: Response
       })
     }
 
-    const results = await searchEngine.searchUsersByText(search_text.trim(), 'teacher')
+    // const results = await searchEngine.searchUsersByText(search_text.trim(), 'teacher')
+    const results: any[] = []
 
     res.json({
       message: 'Teachers search completed successfully',
@@ -171,7 +174,8 @@ export const searchTeachersByImageController = async (req: Request, res: Respons
       })
     }
 
-    const results = await embeddingService.searchUsersByImageEnhanced(req.file.buffer, 'teacher')
+    // const results = await embeddingService.searchUsersByImageEnhanced(req.file.buffer, 'teacher')
+    const results: any[] = []
 
     res.json({
       message: 'Image-based teachers search completed successfully',
@@ -211,7 +215,8 @@ export const generateUserEmbeddingsController = async (req: Request, res: Respon
       })
     }
 
-    const success = await embeddingService.generateEnhancedTextEmbedding(target_user_id)
+    // const success = await embeddingService.generateEnhancedTextEmbedding(target_user_id)
+    const success = false
 
     if (!success) {
       return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
@@ -252,7 +257,8 @@ export const storeUserImageEmbeddingController = async (req: Request, res: Respo
     const user = await databaseService.users.findOne({ _id: new ObjectId(user_id) })
     const imageUrl = user?.avatar || `profile_${user_id}`
 
-    const success = await embeddingService.storeEnhancedTextEmbedding(user_id, imageUrl)
+    // const success = await embeddingService.storeEnhancedTextEmbedding(user_id, imageUrl)
+    const success = false
 
     if (!success) {
       return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
@@ -297,7 +303,8 @@ export const storeUserTextEmbeddingController = async (req: Request, res: Respon
       })
     }
 
-    const success = await embeddingService.storeEnhancedTextEmbedding(user_id, text.trim(), type)
+    // const success = await embeddingService.storeEnhancedTextEmbedding(user_id, text.trim(), type)
+    const success = false
 
     if (!success) {
       return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({

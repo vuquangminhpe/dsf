@@ -1,72 +1,3 @@
-export const PROMPT_TWEET_FREE = `
-// Step 1: Content Validation (MUST BE PERFORMED FIRST)
-Đầu tiên, hãy kiểm tra nghiêm ngặt nội dung đầu vào theo các tiêu chí sau:
-- Có chứa từ ngữ không phù hợp, tục tĩu
-- Có nội dung phản động, kích động
-- Có nội dung bạo lực, quấy rối
-- Có nội dung 18+, không phù hợp
-
-Nếu vi phạm BẤT KỲ tiêu chí nào trên, DỪNG XỬ LÝ NGAY và trả về:
-{
-    "status": "VIOLATION",
-    "message": "Hãy sửa lại ngôn từ, nếu có lần thứ 2 account sẽ bị band vĩnh viễn và không thể khôi phục"
-}
-
-// Step 2: Tweet Generation (CHỈ thực hiện nếu nội dung hợp lệ)
-Nếu nội dung hợp lệ, tạo tweet với format:
-{
-    "status": "SUCCESS",
-    "data": {
-        "content": "Nội dung tweet dựa trên text hoặc ảnh của người dùng",
-        "hashtags": ["#Hashtag1", "#Hashtag2"]
-    }
-}
-
-Lưu ý:
-1. PHẢI thực hiện validation trước khi xử lý bất kỳ logic nào khác
-2. Trả về đúng format JSON và không kèm text khác
-3. Hashtags phải được đề xuất tự động dựa trên nội dung
-`
-export const PROMPT_TWEET_PREMIUM = `
-// Step 1: Content Validation (MUST BE PERFORMED FIRST)
-Đầu tiên, hãy kiểm tra nghiêm ngặt nội dung đầu vào theo các tiêu chí sau:
-- Có chứa từ ngữ không phù hợp, tục tĩu
-- Có nội dung phản động, kích động
-- Có nội dung bạo lực, quấy rối
-- Có nội dung 18+, không phù hợp
-
-Nếu vi phạm BẤT KỲ tiêu chí nào trên, DỪNG XỬ LÝ NGAY và trả về:
-{
-    "status": "VIOLATION",
-    "message": "Hãy sửa lại ngôn từ, nếu có lần thứ 2 account sẽ bị band vĩnh viễn và không thể khôi phục"
-}
-
-// Step 2: Tweet Generation (CHỈ thực hiện nếu nội dung hợp lệ)
-
-{
-"status": "SUCCESS",
-   "data": { content: 'Nội dung tweet dựa trên text hoặc ảnh của người dùng.',
-    hashtags: ['#Hashtag1', '#Hashtag2'], // Được đề xuất tự động dựa trên AI - phải phù hợp với text hoặc ảnh người dùng đưa vào nhé
-    scheduled_time: 'Thời gian lên lịch đăng tweet tối ưu (định dạng ISO 8601).',
-    sentiment_analysis: {
-      sentiment: 'positive/neutral/negative', // Phân tích cảm xúc của nội dung
-      confidence_score: 0.95 // Độ tin cậy của phân tích cảm xúc
-    },
-    analytics_tags: {
-      campaign: 'Tên chiến dịch (nếu có).',
-      source: 'Nguồn tweet kèm link (chỉ khi có sự chính xác tuyệt đối 100% về link nhé).',
-      target_audience: 'Đối tượng mục tiêu (ví dụ: developers, marketers).'
-    }
-      }
-  }
-    Lưu ý:
-
-    1. Trả về định dạng JSON trên và không có thêm văn bản nào khác.
-    2. Hashtags phải được đề xuất tự động dựa trên nội dung của người dùng.
-    3. Thời gian lên lịch đăng tweet phải được tính toán tối ưu để đạt tương tác cao nhất.
-    4. Phân tích cảm xúc của nội dung phải được thực hiện và trả về kết quả chính xác.
-`
-
 export const PROMPT_CHAT = (body: {
   count: number
   mon_hoc: string
@@ -74,8 +5,41 @@ export const PROMPT_CHAT = (body: {
   lop: string
   cauhoidanhchohocsinh: string
 }) => `
-Hãy vào vai một giáo viên dạy môn ${body.mon_hoc} lớp ${body.lop} ở Việt Nam và suy nghĩ sau đó tạo ${body.count} câu hỏi trắc nghiệm môn ${body.mon_hoc} (lưu ý đặc biệt đó là sách giáo khóa ${body.sachgiaokhoa || ''} nhé - không được lấy kiến thức khác ngoài sách giáo khoa này nhé), chương trình của lớp ${body.lop} ở Việt Nam. Các câu hỏi cần bao gồm cả lý thuyết và bài tập cơ bản đến vận dụng đến vận dụng cao.
+# VAI TRÒ CỦA BẠN:
+Bạn là một chuyên gia giáo dục tiểu học, đặc biệt có kinh nghiệm 10 năm ra đề và ôn thi cho kỳ thi "Trạng Nguyên Tiếng Việt" lớp 3. Bạn nắm vững chương trình sách giáo khoa mới (Kết nối tri thức, Chân trời sáng tạo, Cánh diều).
 
+# NHIỆM VỤ:
+Hãy tạo ra 01 Mã đề thi Trạng Nguyên Tiếng Việt Lớp 3 hoàn chỉnh.
+- Tổng số câu: 30 câu.
+- Thời gian quy định: 30 phút.
+- Cấu trúc: 3 phần thi (chi tiết bên dưới).
+
+# CẤU TRÚC ĐỀ THI BẮT BUỘC:
+
+## PHẦN 1: PHÉP THUẬT MÈO CON (10 CÂU)
+- Nhiệm vụ: Tạo ra 10 cặp từ nối tương ứng (A <-> B).
+- Yêu cầu nội dung: Các cặp từ đồng nghĩa, trái nghĩa, từ ghép phân loại, hoặc ghép thành ngữ/tục ngữ quen thuộc.
+- Trình bày: Dạng danh sách (Ví dụ: 1. Siêng năng <-> Chăm chỉ).
+
+## PHẦN 2: CHUỘT VÀNG TÀI BA (10 CÂU)
+- Nhiệm vụ: Trắc nghiệm khách quan 4 đáp án (A, B, C, D).
+- Yêu cầu đặc biệt về HÌNH ẢNH:
+  + Ít nhất 5/10 câu hỏi phải dựa trên hình ảnh.
+  + Vì bạn là AI văn bản, bạn KHÔNG tạo ảnh thật mà hãy viết mô tả ảnh vào vị trí cần thiết theo cú pháp: [Ảnh: Tên_file_ngắn_gọn.png - Mô tả chi tiết hình ảnh chứa gì].
+- Nội dung kiến thức: Biện pháp tu từ (So sánh, Nhân hóa), Nhận diện sự vật/hoạt động qua ảnh, Chính tả (s/x, tr/ch, l/n), Câu kiểu (Ai là gì, Ai làm gì).
+
+## PHẦN 3: TRÂU VÀNG UYÊN BÁC (10 CÂU)
+- Nhiệm vụ: Điền từ hoặc chữ cái còn thiếu vào chỗ trống.
+- Nội dung: Ca dao tục ngữ, quy tắc chính tả, từ vựng theo chủ điểm (Trường học, Gia đình, Quê hương, Cộng đồng).
+- Trình bày: Câu hỏi + Đáp án ngay bên cạnh.
+
+# YÊU CẦU VỀ CHẤT LƯỢNG:
+1. Giọng văn: Trong sáng, phù hợp với học sinh lớp 3 (8-9 tuổi).
+2. Độ khó: 
+   - 60% Cơ bản (Nhận biết).
+   - 30% Thông hiểu (Vận dụng).
+   - 10% Vận dụng cao (Câu đố mẹo hoặc thành ngữ khó).
+3. Đảm bảo đáp án ĐÚNG TUYỆT ĐỐI về mặt ngữ pháp và logic.
 QUAN TRỌNG: Trả về CHÍNH XÁC JSON thuần, bắt đầu bằng dấu { và kết thúc bằng dấu }. 
 KHÔNG sử dụng markdown formatting (json), KHÔNG có text giải thích, KHÔNG có backticks.
 KHÔNG sử dụng LaTeX math syntax ($...$), KHÔNG sử dụng markdown formatting (**text**, *text*).
@@ -93,14 +57,14 @@ Cấu trúc JSON phải như sau:
       "id": 2,
       "question_text": "Câu 2: {Nội dung câu hỏi 2}\nA. {Nội dung đáp án A2}\nB. {Nội dung đáp án B2}\nC. {Nội dung đáp án C2}\nD. {Nội dung đáp án D2}"
     },
-    // ... tiếp tục cho đến hết ${body.count} câu hỏi
+    // ... tiếp tục cho đến hết 30 câu hỏi
     
   ],
   "answers": [
     // Danh sách các đáp án đúng theo thứ tự câu hỏi, chỉ gồm ký tự 'A', 'B', 'C', hoặc 'D' (chỉ tạo ra 4 đáp án A, B, C, D)
     "{Đáp án câu 1}", // Ví dụ: "A"
     "{Đáp án câu 2}", // Ví dụ: "C"
-    // ... tiếp tục cho đến hết ${body.count} đáp án
+    // ... tiếp tục cho đến hết 30 đáp án
     "{Đáp án câu cuối}" // Ví dụ: "B"
   ]
 }

@@ -27,7 +27,7 @@ import pick from 'lodash/pick'
 import { hashPassword, verifyPassword } from '../utils/crypto'
 import { config } from 'dotenv'
 import { envConfig } from '../constants/config'
-import faceEmbeddingServices from '~/services/faceEmbedding.services'
+// import faceEmbeddingServices from '~/services/faceEmbedding.services'
 import multer from 'multer'
 config()
 export const loginController = async (req: Request<ParamsDictionary, any, LoginReqBody>, res: Response) => {
@@ -454,7 +454,8 @@ export const registerStudentController = async (
     console.log('📸 Processing face image and creating embedding...')
 
     try {
-      const faceEmbeddingSuccess = await faceEmbeddingServices.storeFaceEmbedding(student_id, req.file.buffer)
+      // const faceEmbeddingSuccess = await faceEmbeddingServices.storeFaceEmbedding(student_id, req.file.buffer)
+      const faceEmbeddingSuccess = false
 
       if (!faceEmbeddingSuccess) {
         console.warn('⚠️ Face embedding creation failed, but student account created')
@@ -560,12 +561,12 @@ export const getTeacherStudentsController = async (req: Request, res: Response) 
     // Get face embedding status for each student
     const studentsWithFaceStatus = await Promise.all(
       students.map(async (student) => {
-        const faceEmbedding = await databaseService.db.collection('face_embeddings').findOne({ user_id: student._id })
+        // const faceEmbedding = await databaseService.db.collection('face_embeddings').findOne({ user_id: student._id })
 
         return {
           ...student,
-          has_face_profile: !!faceEmbedding,
-          face_created_at: faceEmbedding?.created_at || null
+          has_face_profile: false,
+          face_created_at: null
         }
       })
     )
