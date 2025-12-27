@@ -388,13 +388,6 @@ export const registerStudentController = async (
       })
     }
 
-    // Validate phone if provided
-    if (phone && !/^[0-9]{10,11}$/.test(phone)) {
-      return res.status(HTTP_STATUS.BAD_REQUEST).json({
-        message: 'Invalid phone number format'
-      })
-    }
-
     // Create student user document
     const studentUser = {
       name: name.trim(),
