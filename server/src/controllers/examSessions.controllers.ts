@@ -103,14 +103,6 @@ export const startExamController = async (req: Request, res: Response) => {
           message: error.message
         })
       }
-
-      // Check if it's a face verification error
-      if (error.message.includes('Xác thực khuôn mặt') || error.message.includes('Chưa có dữ liệu khuôn mặt')) {
-        return res.status(HTTP_STATUS.FORBIDDEN).json({
-          message: error.message,
-          error_type: 'FACE_VERIFICATION_FAILED'
-        })
-      }
     }
 
     res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
