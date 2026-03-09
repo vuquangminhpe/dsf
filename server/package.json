@@ -286,6 +286,7 @@
     "tsx": "^4.19.1"
   },
   "scripts": {
+    "postinstall": "node scripts/patch-node25.js",
     "dev": "npx nodemon --development",
     "dev:prod": "npx nodemon --env=production",
     "build": "rimraf ./dist && tsc && tsc-alias",

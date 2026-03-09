@@ -18,6 +18,7 @@ import adminRouter from './routes/admin.routes'
 import apiRouter from './routes'
 import geminiRoutes from './routes/gemini.routes'
 import { startExamExpirationScheduler } from './services/examScheduler/examScheduler'
+import path from 'path'
 config()
 databaseService
   .connect()
@@ -35,7 +36,12 @@ databaseService
 const app = express()
 const httpServer = createServer(app)
 const port = envConfig.port || 3002
-app.use(helmet())
+app.use(
+  helmet({
+    crossOriginOpenerPolicy: { policy: 'same-origin' },
+    crossOriginEmbedderPolicy: { policy: 'require-corp' }
+  })
+)
 const corsOptions: CorsOptions = {
   origin: '*',
   optionsSuccessStatus: 200
@@ -52,6 +58,22 @@ try {
   // console.error('Error initializing directories:', error)
 }
 app.use(express.json())
+
+// Health check endpoint (for UptimeRobot keep-alive)
+app.get('/health', (_req, res) => {
+  res.status(200).json({ status: 'ok' })
+})
+
+// Serve AI proctoring model files with long-term cache
+app.use(
+  '/models',
+  express.static(path.resolve(process.cwd(), 'models'), {
+    setHeaders: (res) => {
+      res.setHeader('Cache-Control', 'public, max-age=31536000, immutable')
+    }
+  })
+)
+
 app.use('/users', usersRouter)
 app.use('/medias', mediasRouter)
 

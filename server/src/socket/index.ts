@@ -146,6 +146,7 @@ export const initSocketServer = (httpServer: http.Server) => {
 
     // Student joins exam session room
     socket.on('join_exam', async (sessionId) => {
+      console.log(`[join_exam] Student ${socket.data.user_id} attempting to join session ${sessionId}`)
       try {
         socket.join(`exam_${sessionId}`)
         activeExamSessions.add(sessionId)
@@ -209,6 +210,11 @@ export const initSocketServer = (httpServer: http.Server) => {
       const user_id = socket.data.user_id
       const ip_address = socket.data.ip_address
 
+      console.log(
+        `[register_device] User ${user_id}, Session ${session_id}, IP: ${ip_address}, Device:`,
+        JSON.stringify(device_info)
+      )
+
       // Register the device and check for suspicious activity
       const isValid = await examSecurityService.registerDevice(session_id, user_id, device_info, ip_address)
 
@@ -240,8 +246,14 @@ export const initSocketServer = (httpServer: http.Server) => {
       const { session_id, photo } = data
       const user_id = socket.data.user_id
 
+      console.log(`[webcam_verification] User ${user_id}, Session ${session_id}`)
+
       // Verify the webcam image
       const isVerified = await examSecurityService.verifyWebcamImage(session_id, user_id, photo)
+
+      console.log(
+        `[webcam_verification] Result: ${isVerified ? 'VERIFIED' : 'FAILED'} — User ${user_id}, Session ${session_id}`
+      )
 
       // Send result back to client
       socket.emit('webcam_verification_result', {
@@ -254,6 +266,8 @@ export const initSocketServer = (httpServer: http.Server) => {
     socket.on('tab_switch', async (data) => {
       const { session_id } = data
       const user_id = socket.data.user_id
+
+      console.log(`[tab_switch] User ${user_id}, Session ${session_id}`)
 
       try {
         // Update last activity time
@@ -324,6 +338,13 @@ export const initSocketServer = (httpServer: http.Server) => {
       const { session_id, type, details } = data
       const user_id = socket.data.user_id
 
+      console.log(`[exam_violation] Received — User: ${user_id}, Session: ${session_id}, Type: ${type}`)
+      if (details) {
+        console.log(
+          `[exam_violation] Details — confidence: ${details.confidence}, consecutive_frames: ${details.consecutive_frames}, detection_method: ${details.detection_method}, timestamp: ${details.timestamp}`
+        )
+      }
+
       try {
         // Update last activity time
         if (activeExams.has(session_id)) {
@@ -338,12 +359,21 @@ export const initSocketServer = (httpServer: http.Server) => {
           type === 'screen_capture_attempt' ||
           type === 'keyboard_shortcut' ||
           type === 'multiple_ips' ||
-          type === 'webcam_manipulation'
+          type === 'webcam_manipulation' ||
+          type === 'ai_phone_detected' ||
+          type === 'ai_earphone_detected' ||
+          type === 'ai_extra_person'
         ) {
           severity = 'high'
-        } else if (type === 'inactivity' || type === 'unusual_activity') {
+        } else if (type === 'ai_head_turned') {
+          severity = 'medium'
+        } else if (type === 'inactivity' || type === 'unusual_activity' || type === 'ai_head_tilted') {
           severity = 'low'
         }
+
+        // For AI proctoring high-severity violations, auto-lock exam
+        const isAiHighSeverity =
+          type === 'ai_phone_detected' || type === 'ai_earphone_detected' || type === 'ai_extra_person'
 
         // First, check if this violation was already recorded from the client side
         const existingViolation = await databaseService.db.collection('exam_violations').findOne({
@@ -354,22 +384,54 @@ export const initSocketServer = (httpServer: http.Server) => {
         })
 
         // Only record if no recent duplicate exists
+        if (existingViolation) {
+          console.log(
+            `[exam_violation] Skipped duplicate — Type: ${type}, Session: ${session_id} (within 5s dedup window)`
+          )
+        }
         if (!existingViolation) {
+          console.log(
+            `[exam_violation] Recording — Type: ${type}, Severity: ${severity}, AI_Lock: ${type === 'ai_phone_detected' || type === 'ai_earphone_detected' || type === 'ai_extra_person'}, Session: ${session_id}`
+          )
+
           // Record the violation
           const violation = await examSecurityService.recordViolation(session_id, user_id, type, details, severity)
 
-          // Get updated session
-          const updatedSession = await examSessionService.recordViolation(session_id)
+          // For AI high-severity violations, use critical violation (auto-lock exam)
+          let updatedSession
+          if (isAiHighSeverity) {
+            console.log(
+              `[exam_violation] AUTO-LOCK — Type: ${type}, Session: ${session_id}, User: ${user_id}. Applying critical violation (score=0, completed=true)`
+            )
+            updatedSession = await examSessionService.recordCriticalViolation(session_id)
+            activeExams.delete(session_id)
+          } else {
+            updatedSession = await examSessionService.recordViolation(session_id)
+          }
 
           if (updatedSession) {
+            console.log(
+              `[exam_violation] Updated session — Session: ${session_id}, Violations: ${updatedSession.violations}, Score: ${updatedSession.score}, Completed: ${updatedSession.completed}`
+            )
+
             // Broadcast violation to the exam room
+            console.log(`[exam_violation] Broadcasting violation_recorded to exam_${session_id} and monitor rooms`)
             io.to(`exam_${session_id}`).emit('violation_recorded', {
               session_id,
               violations: updatedSession.violations,
               score: updatedSession.score,
               type,
-              severity
+              severity,
+              locked: isAiHighSeverity
             })
+
+            // If AI high severity, also notify student exam is locked
+            if (isAiHighSeverity) {
+              io.to(`exam_${session_id}`).emit('exam_ended_by_teacher', {
+                session_id,
+                reason: `AI proctoring detected critical violation: ${type}`
+              })
+            }
 
             // Find the exam ID for this session
             const session = await databaseService.examSessions.findOne({ _id: new ObjectId(session_id) })
@@ -392,8 +454,22 @@ export const initSocketServer = (httpServer: http.Server) => {
                 type,
                 severity,
                 details,
-                timestamp: new Date()
+                timestamp: new Date(),
+                locked: isAiHighSeverity
               })
+
+              // Notify teachers if exam was auto-locked
+              if (isAiHighSeverity) {
+                io.to(`monitor_${examId}`).emit('student_exam_ended', {
+                  session_id,
+                  exam_id: examId,
+                  student_id: user_id,
+                  student_name: student?.name || 'Unknown',
+                  student_username: student?.username || 'Unknown',
+                  reason: `AI proctoring: ${type}`,
+                  timestamp: new Date()
+                })
+              }
             }
           }
         }
@@ -404,6 +480,7 @@ export const initSocketServer = (httpServer: http.Server) => {
 
     // Student submits exam
     socket.on('exam_submitted', async (sessionId) => {
+      console.log(`[exam_submitted] Student ${socket.data.user_id}, Session: ${sessionId}`)
       try {
         // Find the exam ID for this session
         const session = await databaseService.examSessions.findOne({ _id: new ObjectId(sessionId) })
@@ -1090,7 +1167,9 @@ export const initSocketServer = (httpServer: http.Server) => {
 
     // Cleanup on disconnect
     socket.on('disconnect', () => {
-      console.log(`User disconnected: ${socket.data.user_id}`)
+      console.log(
+        `[disconnect] User ${socket.data.user_id}, Role: ${socket.data.role}, Active sessions: ${activeExamSessions.size}`
+      )
       clearInterval(timeInterval)
       clearInterval(monitoringInterval)
 

@@ -90,6 +90,26 @@ export enum FeedbackPriority {
   Urgent = 'urgent'
 }
 
+export enum AIViolationType {
+  PhoneDetected = 'ai_phone_detected',
+  EarphoneDetected = 'ai_earphone_detected',
+  ExtraPerson = 'ai_extra_person',
+  HeadTurned = 'ai_head_turned',
+  HeadTilted = 'ai_head_tilted'
+}
+
+export enum ViolationSeverity {
+  Low = 'low',
+  Medium = 'medium',
+  High = 'high'
+}
+
+export enum ExamErrorType {
+  FaceVerificationFailed = 'FACE_VERIFICATION_FAILED',
+  ExamAlreadySubmitted = 'EXAM_ALREADY_SUBMITTED',
+  ExamExpired = 'EXAM_EXPIRED'
+}
+
 export enum FeedbackCategory {
   TechnicalIssue = 'technical_issue',
   FeatureRequest = 'feature_request',
