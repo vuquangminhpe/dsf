@@ -279,14 +279,7 @@ export const typeCountValidator_Teacher = async (req: Request, res: Response, ne
   try {
     const { user_id } = req.decode_authorization as TokenPayload
     const user = await databaseService.users.findOne({ _id: new ObjectId(user_id) })
-    if (Number(user?.count_test || 0) < 1) {
-      return next(
-        new ErrorWithStatus({
-          message: 'Bạn đã hết lượt miễn phí, hãy mua các gói để tiếp tục sử dụng',
-          status: HTTP_STATUS.SERVICE_UNAVAILABLE
-        })
-      )
-    }
+    console.log('User role:', user?.role)
 
     next()
   } catch (error) {
