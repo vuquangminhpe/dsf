@@ -5,6 +5,7 @@ import examSessionService from '../services/examSessions.services'
 import multer from 'multer'
 import { ObjectId } from 'mongodb'
 import databaseService from '../services/database.services'
+import { getSingleParam } from '../utils/request'
 
 // Configure multer for face image upload
 const storage = multer.memoryStorage()
@@ -220,7 +221,7 @@ export const getExamHistoryController = async (req: Request, res: Response) => {
  */
 export const getSessionStatisticsController = async (req: Request, res: Response) => {
   try {
-    const { exam_id } = req.params
+    const exam_id = getSingleParam(req.params.exam_id)
     const { user_id } = req.decode_authorization as TokenPayload
 
     // Verify user has permission to view this exam's statistics

@@ -29,6 +29,7 @@ import { config } from 'dotenv'
 import { envConfig } from '../constants/config'
 // import faceEmbeddingServices from '~/services/faceEmbedding.services'
 import multer from 'multer'
+import { getSingleParam } from '../utils/request'
 config()
 export const loginController = async (req: Request<ParamsDictionary, any, LoginReqBody>, res: Response) => {
   const user = req.user as User
@@ -256,7 +257,7 @@ export const getProfileByUserNameController = async (
   req: Request<ParamsDictionary, any, UserProfileReqBody>,
   res: Response
 ) => {
-  const { username } = req.params
+  const username = getSingleParam(req.params.username)
 
   const result = await usersService.getProfileByUserName(username)
   res.json(result)
@@ -265,7 +266,7 @@ export const getProfileByIdController = async (
   req: Request<ParamsDictionary, any, UserProfileReqBody>,
   res: Response
 ) => {
-  const { user_id } = req.params
+  const user_id = getSingleParam(req.params.user_id)
 
   const result = await usersService.getProfileByUserId(user_id)
   res.json(result)

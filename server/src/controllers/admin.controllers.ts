@@ -7,6 +7,7 @@ import { ObjectId } from 'mongodb'
 import databaseService from '../services/database.services'
 import { UserRole } from '../models/schemas/User.schema'
 import examService from '../services/exams.services'
+import { getSingleParam } from '../utils/request'
 
 // Existing controllers
 export const getUserStatisticsController = async (req: Request<any, any, any, UserStatsQuery>, res: Response) => {
@@ -96,7 +97,7 @@ export const getAllMasterExamsController = async (req: Request, res: Response) =
 // Delete a user (teacher or student)
 export const deleteUserController = async (req: Request, res: Response) => {
   try {
-    const { user_id } = req.params
+    const user_id = getSingleParam(req.params.user_id)
 
     // Check if user exists
     const user = await databaseService.users.findOne({ _id: new ObjectId(user_id) })
@@ -125,7 +126,7 @@ export const deleteUserController = async (req: Request, res: Response) => {
 // Delete a master exam
 export const deleteMasterExamController = async (req: Request, res: Response) => {
   try {
-    const { master_exam_id } = req.params
+    const master_exam_id = getSingleParam(req.params.master_exam_id)
     const { user_id } = req.decode_authorization as { user_id: string }
 
     // Use the existing exam service method but as admin
@@ -161,7 +162,7 @@ export const deleteMasterExamController = async (req: Request, res: Response) =>
 // Change user role (promote to teacher or demote to student)
 export const changeUserRoleController = async (req: Request, res: Response) => {
   try {
-    const { user_id } = req.params
+    const user_id = getSingleParam(req.params.user_id)
     const { role } = req.body
 
     // Validate role

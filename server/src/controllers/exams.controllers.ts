@@ -5,6 +5,7 @@ import examService from '../services/exams.services'
 import { UserRole } from '../models/schemas/User.schema'
 import databaseService from '~/services/database.services'
 import { ObjectId } from 'mongodb'
+import { getSingleParam } from '../utils/request'
 
 export const generateExamController = async (req: Request, res: Response) => {
   const { title, quantity, question_count, duration, start_time, master_exam_id } = req.body
@@ -56,7 +57,7 @@ export const getExamsController = async (req: Request, res: Response) => {
 
 // New controller to get a specific exam by ID
 export const getExamByIdController = async (req: Request, res: Response) => {
-  const { exam_id } = req.params
+  const exam_id = getSingleParam(req.params.exam_id)
   const { user_id } = req.decode_authorization as TokenPayload
 
   try {
@@ -89,7 +90,7 @@ export const getExamByIdController = async (req: Request, res: Response) => {
 
 // New controller to update exam status (enable/disable)
 export const updateExamStatusController = async (req: Request, res: Response) => {
-  const { exam_id } = req.params
+  const exam_id = getSingleParam(req.params.exam_id)
   const { active, start_time, duration } = req.body
   const { user_id } = req.decode_authorization as TokenPayload
 
@@ -133,7 +134,7 @@ export const updateExamStatusController = async (req: Request, res: Response) =>
 
 // Controller to get exam results
 export const getExamResultsController = async (req: Request, res: Response) => {
-  const { exam_id } = req.params
+  const exam_id = getSingleParam(req.params.exam_id)
   const { user_id } = req.decode_authorization as TokenPayload
 
   try {
@@ -168,7 +169,7 @@ export const getExamResultsController = async (req: Request, res: Response) => {
 
 // Controller to get exam statistics
 export const getExamStatisticsController = async (req: Request, res: Response) => {
-  const { exam_id } = req.params
+  const exam_id = getSingleParam(req.params.exam_id)
   const { user_id } = req.decode_authorization as TokenPayload
 
   try {
@@ -201,7 +202,7 @@ export const getExamStatisticsController = async (req: Request, res: Response) =
   }
 }
 export const getClassExamResultsController = async (req: Request, res: Response) => {
-  const { exam_id } = req.params
+  const exam_id = getSingleParam(req.params.exam_id)
   const { search_term, violation_types, page, limit } = req.query
   const { user_id } = req.decode_authorization as TokenPayload
   try {
@@ -302,7 +303,7 @@ export const getMasterExamsController = async (req: Request, res: Response) => {
 
 // Controller to get a specific master exam
 export const getMasterExamByIdController = async (req: Request, res: Response) => {
-  const { master_exam_id } = req.params
+  const master_exam_id = getSingleParam(req.params.master_exam_id)
   const { user_id } = req.decode_authorization as TokenPayload
 
   try {
@@ -336,7 +337,7 @@ export const getMasterExamByIdController = async (req: Request, res: Response) =
 
 // Controller to get exams by master exam ID
 export const getExamsByMasterExamIdController = async (req: Request, res: Response) => {
-  const { master_exam_id } = req.params
+  const master_exam_id = getSingleParam(req.params.master_exam_id)
   const { user_id } = req.decode_authorization as TokenPayload
 
   try {
@@ -372,7 +373,7 @@ export const getExamsByMasterExamIdController = async (req: Request, res: Respon
 
 // Controller to get classes for a master exam
 export const getClassesForMasterExamController = async (req: Request, res: Response) => {
-  const { master_exam_id } = req.params
+  const master_exam_id = getSingleParam(req.params.master_exam_id)
   const { user_id } = req.decode_authorization as TokenPayload
 
   try {
@@ -407,7 +408,8 @@ export const getClassesForMasterExamController = async (req: Request, res: Respo
 }
 
 export const getClassExamResultsForMasterExamController = async (req: Request, res: Response) => {
-  const { master_exam_id, className } = req.params
+  const master_exam_id = getSingleParam(req.params.master_exam_id)
+  const className = getSingleParam(req.params.className)
   const { search_term, violation_types, page, limit } = req.query
   const { user_id } = req.decode_authorization as TokenPayload
 
@@ -468,7 +470,8 @@ export const getClassExamResultsForMasterExamController = async (req: Request, r
   }
 }
 export const getStudentViolationsController = async (req: Request, res: Response) => {
-  const { exam_id, student_id } = req.params
+  const exam_id = getSingleParam(req.params.exam_id)
+  const student_id = getSingleParam(req.params.student_id)
   const { user_id } = req.decode_authorization as TokenPayload
 
   try {
@@ -544,7 +547,7 @@ export const getMasterExamsWithStatusController = async (req: Request, res: Resp
 
 // Toggle master exam status
 export const toggleMasterExamStatusController = async (req: Request, res: Response) => {
-  const { master_exam_id } = req.params
+  const master_exam_id = getSingleParam(req.params.master_exam_id)
   const { active } = req.body
   const { user_id } = req.decode_authorization as TokenPayload
 
@@ -581,7 +584,7 @@ export const toggleMasterExamStatusController = async (req: Request, res: Respon
 
 // Delete master exam with restrictions
 export const deleteMasterExamController = async (req: Request, res: Response) => {
-  const { master_exam_id } = req.params
+  const master_exam_id = getSingleParam(req.params.master_exam_id)
   const { user_id } = req.decode_authorization as TokenPayload
 
   try {
@@ -616,7 +619,7 @@ export const deleteMasterExamController = async (req: Request, res: Response) =>
 
 // Get detailed master exam with all exams
 export const getMasterExamWithExamsController = async (req: Request, res: Response) => {
-  const { master_exam_id } = req.params
+  const master_exam_id = getSingleParam(req.params.master_exam_id)
   const { user_id } = req.decode_authorization as TokenPayload
 
   try {

@@ -10,6 +10,7 @@ import {
   UpdatePackageBody
 } from '../models/request/Payment.request'
 import { TokenPayload } from '../models/request/User.request'
+import { getSingleParam } from '../utils/request'
 
 // Public APIs
 export const getPackagesController = async (req: Request, res: Response) => {
@@ -82,7 +83,7 @@ export const getUserPaymentsController = async (req: Request<any, any, any, GetP
 
 export const getPaymentByIdController = async (req: Request, res: Response) => {
   try {
-    const { payment_id } = req.params
+    const payment_id = getSingleParam(req.params.payment_id)
     const { user_id } = req.decode_authorization as TokenPayload
 
     const payment = await paymentService.getPaymentById(payment_id)
@@ -133,7 +134,7 @@ export const getAllPaymentsController = async (req: Request<any, any, any, GetPa
 
 export const updatePaymentStatusController = async (req: Request<any, any, UpdatePaymentStatusBody>, res: Response) => {
   try {
-    const { payment_id } = req.params
+    const payment_id = getSingleParam(req.params.payment_id)
     const { status, admin_note } = req.body
     const { user_id } = req.decode_authorization as TokenPayload
 
@@ -160,7 +161,7 @@ export const updatePaymentStatusController = async (req: Request<any, any, Updat
 
 export const deletePaymentController = async (req: Request, res: Response) => {
   try {
-    const { payment_id } = req.params
+    const payment_id = getSingleParam(req.params.payment_id)
 
     const result = await paymentService.deletePayment(payment_id)
 
@@ -202,7 +203,7 @@ export const createPackageController = async (req: Request<any, any, CreatePacka
 
 export const updatePackageController = async (req: Request<any, any, UpdatePackageBody>, res: Response) => {
   try {
-    const { package_id } = req.params
+    const package_id = getSingleParam(req.params.package_id)
     const package_ = await paymentService.updatePackage(package_id, req.body)
 
     if (!package_) {
@@ -226,7 +227,7 @@ export const updatePackageController = async (req: Request<any, any, UpdatePacka
 
 export const deletePackageController = async (req: Request, res: Response) => {
   try {
-    const { package_id } = req.params
+    const package_id = getSingleParam(req.params.package_id)
 
     const result = await paymentService.deletePackage(package_id)
 

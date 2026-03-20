@@ -1,5 +1,6 @@
 import { config } from 'dotenv'
 import argv from 'minimist'
+import type jwt from 'jsonwebtoken'
 const options = argv(process.argv.slice(2))
 export const isProduction = options.env === 'production'
 
@@ -29,11 +30,11 @@ export const envConfig = {
   secretOnPublicKey_Refresh: process.env.JWT_SECRET_REFRESH_TOKEN,
   secretOnPublicKey_Email: process.env.JWT_SECRET_EMAIL_VERIFY_TOKEN,
   privateKey_access_token: process.env.JWT_SECRET_ACCESS_TOKEN,
-  expiresIn_access_token: process.env.ACCESS_TOKEN_EXPIRES_IN,
+  expiresIn_access_token: process.env.ACCESS_TOKEN_EXPIRES_IN as jwt.SignOptions['expiresIn'],
   privateKey_refresh_token: process.env.JWT_SECRET_REFRESH_TOKEN,
-  expiresIn_refresh_token: process.env.REFRESH_TOKEN_EXPIRES_IN,
-  expiresIn_forgot_token: process.env.FORGOT_PASSWORD_TOKEN_EXPIRES_IN,
-  expiresIn_email_token: process.env.EMAIL_VERIFY_TOKEN_EXPIRES_IN,
+  expiresIn_refresh_token: process.env.REFRESH_TOKEN_EXPIRES_IN as jwt.SignOptions['expiresIn'],
+  expiresIn_forgot_token: process.env.FORGOT_PASSWORD_TOKEN_EXPIRES_IN as jwt.SignOptions['expiresIn'],
+  expiresIn_email_token: process.env.EMAIL_VERIFY_TOKEN_EXPIRES_IN as jwt.SignOptions['expiresIn'],
   client_id: process.env.GOOGLE_CLIENT_ID,
   client_secret: process.env.GOOGLE_CLIENT_SECRET,
   redirect_uri: process.env.GOOGLE_REDIRECT_URI,

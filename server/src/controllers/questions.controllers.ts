@@ -2,6 +2,7 @@ import { Request, Response } from 'express'
 import HTTP_STATUS from '../constants/httpStatus'
 import questionService from '../services/questions.services'
 import { TokenPayload } from '../models/request/User.request'
+import { getSingleParam } from '../utils/request'
 
 export const createQuestionController = async (req: Request, res: Response) => {
   const { content, answers, correct_index, master_exam_id, questionLink } = req.body
@@ -49,7 +50,7 @@ export const getQuestionsController = async (req: Request, res: Response) => {
 }
 
 export const updateQuestionController = async (req: Request, res: Response) => {
-  const { id } = req.params
+  const id = getSingleParam(req.params.id)
   const { content, answers, correct_index } = req.body
   const { user_id } = req.decode_authorization as TokenPayload
 
@@ -88,7 +89,7 @@ export const updateQuestionController = async (req: Request, res: Response) => {
 }
 
 export const deleteQuestionController = async (req: Request, res: Response) => {
-  const { id } = req.params
+  const id = getSingleParam(req.params.id)
   const { user_id } = req.decode_authorization as TokenPayload
 
   try {

@@ -98,47 +98,47 @@ class ExamSessionService {
     }
 
     // Check if student already completed this exam
-    // const completed_session = await databaseService.examSessions.findOne({
-    //   exam_id: exam._id,
-    //   student_id: new ObjectId(student_id),
-    //   completed: true
-    // })
+    const completed_session = await databaseService.examSessions.findOne({
+      exam_id: exam._id,
+      student_id: new ObjectId(student_id),
+      completed: true
+    })
 
-    // const master_exam = await databaseService.masterExams.findOne({
-    //   _id: exam.master_exam_id
-    // })
+    const master_exam = await databaseService.masterExams.findOne({
+      _id: exam.master_exam_id
+    })
 
-    // // Validation checks
-    // if (!exam.active) {
-    //   throw new Error('Bài kiểm tra này hiện đã bị vô hiệu hóa')
-    // }
+    // Validation checks
+    if (!exam.active) {
+      throw new Error('Bài kiểm tra này hiện đã bị vô hiệu hóa')
+    }
 
-    // if (completed_session) {
-    //   throw new ErrorWithStatus({
-    //     message: `Bạn đã làm bài kiểm tra trong ${exam.title.split('#')[0]}. Nếu có sai sót hãy liên hệ với giáo viên`,
-    //     status: HTTP_STATUS.BAD_REQUEST
-    //   })
-    // }
+    if (completed_session) {
+      throw new ErrorWithStatus({
+        message: `Bạn đã làm bài kiểm tra trong ${exam.title.split('#')[0]}. Nếu có sai sót hãy liên hệ với giáo viên`,
+        status: HTTP_STATUS.BAD_REQUEST
+      })
+    }
 
-    // if (exam.start_time && new Date() < exam.start_time) {
-    //   const startTimeStr = master_exam?.start_time ? new Date(master_exam.start_time).toLocaleString() : 'giờ đã đặt'
-    //   throw new Error(
-    //     `Chưa đến giờ thi, vui lòng chờ đến giờ thi ${startTimeStr} để bắt đầu kỳ thi, hoặc liên hệ giáo viên nếu có vấn đề!!!`
-    //   )
-    // }
+    if (exam.start_time && new Date() < exam.start_time) {
+      const startTimeStr = master_exam?.start_time ? new Date(master_exam.start_time).toLocaleString() : 'giờ đã đặt'
+      throw new Error(
+        `Chưa đến giờ thi, vui lòng chờ đến giờ thi ${startTimeStr} để bắt đầu kỳ thi, hoặc liên hệ giáo viên nếu có vấn đề!!!`
+      )
+    }
 
-    // const numActiveStudents = exam.number_active_students !== undefined ? Number(exam.number_active_students) : 0
+    const numActiveStudents = exam.number_active_students !== undefined ? Number(exam.number_active_students) : 0
 
-    // if (numActiveStudents >= 1) {
-    //   throw new Error(
-    //     `Bài kiểm tra này hiện đã có người khác đang làm hoặc đã hoàn thành trong ${exam.title.split('#')[0]}, vui lòng liên hệ giáo viên để lấy 1 mã code mới`
-    //   )
-    // }
+    if (numActiveStudents >= 1) {
+      throw new Error(
+        `Bài kiểm tra này hiện đã có người khác đang làm hoặc đã hoàn thành trong ${exam.title.split('#')[0]}, vui lòng liên hệ giáo viên để lấy 1 mã code mới`
+      )
+    }
 
-    // // Update exam active student count
-    // if (numActiveStudents === 0 && (!exam.start_time || new Date() > exam.start_time)) {
-    //   await databaseService.exams.updateOne({ _id: exam._id }, { $set: { number_active_students: 1 } })
-    // }
+    // Update exam active student count
+    if (numActiveStudents === 0 && (!exam.start_time || new Date() > exam.start_time)) {
+      await databaseService.exams.updateOne({ _id: exam._id }, { $set: { number_active_students: 1 } })
+    }
 
     // Create new session
     const session = new ExamSession({

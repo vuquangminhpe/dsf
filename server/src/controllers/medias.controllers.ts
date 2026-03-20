@@ -6,6 +6,7 @@ import fs from 'fs'
 
 import { UPLOAD_IMAGES_DIR, UPLOAD_VIDEO_DIR } from '../constants/dir'
 import { deleteFileFromS3, deleteS3Folder, sendFileFromS3 } from '../utils/s3'
+import { getSingleParam } from '../utils/request'
 let mime: any
 ;(async () => {
   const mimeModule = await import('mime')
@@ -24,13 +25,13 @@ export const uploadVideoHLSController = async (req: Request, res: Response, next
   res.json({ message: USERS_MESSAGES.UPLOAD_SUCCESS, result: url })
 }
 export const videoStatusController = async (req: Request, res: Response, next: NextFunction) => {
-  const { id } = req.params
-  const result = await mediaService.getVideoStatus(id as string)
+  const id = getSingleParam(req.params.id)
+  const result = await mediaService.getVideoStatus(id)
   res.json({ message: USERS_MESSAGES.GET_VIDEO_STATUS_SUCCESS, result: result })
 }
 
 export const serveImageController = (req: Request, res: Response, next: NextFunction) => {
-  const { name } = req.params
+  const name = getSingleParam(req.params.name)
   res.sendFile(path.resolve(UPLOAD_IMAGES_DIR, name), (err) => {
     if (err) {
       res.status((err as any).status).send('Not found')
@@ -40,7 +41,7 @@ export const serveImageController = (req: Request, res: Response, next: NextFunc
 
 export const serveVideoStreamController = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const { name } = req.params
+    const name = getSingleParam(req.params.name)
     const videoPath = path.resolve(UPLOAD_VIDEO_DIR, name)
 
     const videoSize = fs.statSync(videoPath).size
@@ -77,7 +78,7 @@ export const serveVideoStreamController = async (req: Request, res: Response, ne
 }
 
 export const serveVideoM3u8Controller = (req: Request, res: Response, next: NextFunction) => {
-  const { id } = req.params
+  const id = getSingleParam(req.params.id)
   sendFileFromS3(res, `videos-hls/${id}/master.m3u8`)
   // res.sendFile(path.resolve(UPLOAD_VIDEO_DIR, id, 'master.m3u8'), (err) => {
   //   if (err) {
@@ -86,7 +87,9 @@ export const serveVideoM3u8Controller = (req: Request, res: Response, next: Next
   // })
 }
 export const serveSegmentController = (req: Request, res: Response, next: NextFunction) => {
-  const { id, v, segment } = req.params
+  const id = getSingleParam(req.params.id)
+  const v = getSingleParam(req.params.v)
+  const segment = getSingleParam(req.params.segment)
   sendFileFromS3(res, `videos-hls/${id}/${v}/${segment}`)
   // res.sendFile(path.resolve(UPLOAD_VIDEO_DIR, id, v, segment), (err) => {
   //   if (err) {

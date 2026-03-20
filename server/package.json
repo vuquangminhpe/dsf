@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "",
   "type": "commonjs",
-  "main": "index.ts",
+  "main": "dist/index.js",
   "dependencies": {
     "@aws-sdk/client-s3": "^3.688.0",
     "@aws-sdk/client-ses": "^3.687.0",
@@ -289,7 +289,9 @@
     "postinstall": "node scripts/patch-node25.js",
     "dev": "npx nodemon --development",
     "dev:prod": "npx nodemon --env=production",
+    "seed:students:image": "tsx src/scripts/createStudentsFromImage.ts",
     "build": "rimraf ./dist && tsc && tsc-alias",
+    "start": "node dist/index.js --env=production",
     "start:dev": "node dist/index.js --env=development",
     "start:prod": "node dist/index.js --env=production",
     "lint": "eslint .",
